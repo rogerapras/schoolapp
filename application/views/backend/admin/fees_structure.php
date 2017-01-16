@@ -25,7 +25,7 @@ class="btn btn-primary pull-right">
             <td><?php echo $row['name'];?></td>
             <td><?php echo $this->crud_model->get_class_name($row['class_id']);?></td>
             <td><?php echo $row['yr'];?></td>
-            <td><?php echo $row['term'];?></td>
+            <td><?php echo $this->db->get_where('terms',array('term_number'=>$row['term']))->row()->name;?></td>
             <td>
                 
                 <div class="btn-group">
@@ -34,9 +34,9 @@ class="btn btn-primary pull-right">
                     </button>
                     <ul class="dropdown-menu dropdown-default pull-right" role="menu">
                         
-                        <!-- teacher EDITING LINK -->
+                        <!-- Fee Structure Edit Link -->
                         <li>
-                        	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/fees_structure_edit/<?php echo $row['fees_id'];?>');">
+                        	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_fees_structure_edit/<?php echo $row['fees_id'];?>');">
                             	<i class="entypo-pencil"></i>
 									<?php echo get_phrase('edit');?>
                                	</a>
@@ -49,7 +49,17 @@ class="btn btn-primary pull-right">
                             	<i class="entypo-book-open"></i>
 									<?php echo get_phrase('add_fees_structure');?>
                                	</a>
-                        				</li>
+                        </li>
+                        <li class="divider"></li>
+                        
+                        <!-- Clone Structure Details -->
+                         <li>
+                        	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/poup/modal_clone_fees_structure/<?php echo $row['fees_id'];?>');">
+                            	<i class="entypo-cc"></i>
+									<?php echo get_phrase('clone_fees_structure');?>
+                               	</a>
+                        </li>
+                        
                         <li class="divider"></li>
                         
                         <!-- VIEW FEES STRUCTURE DETAILS -->

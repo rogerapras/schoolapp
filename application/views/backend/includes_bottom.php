@@ -29,7 +29,8 @@
 	<script src="assets/js/datatables/responsive/js/datatables.responsive.js"></script>
     <script src="assets/js/select2/select2.min.js"></script>
     <script src="assets/js/selectboxit/jquery.selectBoxIt.min.js"></script>
-
+    
+   
     
 	<script src="assets/js/neon-calendar.js"></script>
 	<script src="assets/js/neon-chat.js"></script>
@@ -59,6 +60,15 @@
 		$(".dataTables_wrapper select").select2({
 			minimumResultsForSearch: -1
 		});
+		
+		$('.modal-dialog').draggable();
+		
+		$('.modal-content').resizable({
+		    //alsoResize: ".modal-dialog",
+		    minHeight: 300,
+		    minWidth: 300
+		});
+		
 	});
 		
 </script>

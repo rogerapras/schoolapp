@@ -16,6 +16,13 @@
                     <span class="hidden-xs"><?php echo get_phrase('all_students');?></span>
                 </a>
             </li>
+            
+            <li>
+            	<a href="#suspended" data-toggle="tab">
+                    <span class="visible-xs"><i class="entypo-users"></i></span>
+                    <span class="hidden-xs"><?php echo get_phrase('suspended_students');?></span>
+                </a>
+            </li>
         <?php 
             $query = $this->db->get_where('section' , array('class_id' => $class_id));
             if ($query->num_rows() > 0):
@@ -48,7 +55,7 @@
                     </thead>
                     <tbody>
                         <?php 
-                                $students   =   $this->db->get_where('student' , array('class_id'=>$class_id))->result_array();
+                                $students   =   $this->db->get_where('student' , array('class_id'=>$class_id,"active"=>1))->result_array();
                                 foreach($students as $row):?>
                         <tr>
                             <td><?php echo $row['roll'];?></td>
@@ -90,11 +97,11 @@
                                         </li>
                                         <li class="divider"></li>
                                         
-                                        <!-- STUDENT DELETION LINK -->
+                                        <!-- STUDENT SUSPEND LINK -->
                                         <li>
-                                            <a href="#" onclick="confirm_modal('<?php echo base_url();?>index.php?admin/student/<?php echo $class_id;?>/delete/<?php echo $row['student_id'];?>');">
+                                            <a href="#" onclick="confirm_action('<?php echo base_url();?>index.php?admin/student/<?php echo $class_id;?>/delete/<?php echo $row['student_id'];?>');">
                                                 <i class="entypo-trash"></i>
-                                                    <?php echo get_phrase('delete');?>
+                                                    <?php echo get_phrase('suspend');?>
                                                 </a>
                                         </li>
                                     </ul>
@@ -107,6 +114,66 @@
                 </table>
                     
             </div>
+            
+            
+            <div class="tab-pane" id="suspended">
+            	<table class="table table-bordered datatable" id="table_export">
+                    <thead>
+                        <tr>
+                            <th width="80"><div><?php echo get_phrase('roll');?></div></th>
+                            <th width="80"><div><?php echo get_phrase('photo');?></div></th>
+                            <th><div><?php echo get_phrase('name');?></div></th>
+                            <th class="span3"><div><?php echo get_phrase('address');?></div></th>
+                            <th><div><?php echo get_phrase('email');?></div></th>
+                            <th><div><?php echo get_phrase('options');?></div></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php 
+                                $suspended_students   =   $this->db->get_where('student' , array('class_id'=>$class_id,"active"=>0))->result_array();
+                                foreach($suspended_students as $row):?>
+                        <tr>
+                            <td><?php echo $row['roll'];?></td>
+                            <td><img src="<?php echo $this->crud_model->get_image_url('student',$row['student_id']);?>" class="img-circle" width="30" /></td>
+                            <td><?php echo $row['name'];?></td>
+                            <td><?php echo $row['address'];?></td>
+                            <td><?php echo $row['email'];?></td>
+                            <td>
+                                
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+                                        Action <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-default pull-right" role="menu">
+                                        <!-- STUDENT PROFILE LINK -->
+                                        <li>
+                                            <a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_student_profile/<?php echo $row['student_id'];?>');">
+                                                <i class="entypo-user"></i>
+                                                    <?php echo get_phrase('profile');?>
+                                                </a>
+                                        </li>
+                                        
+                                        <li class="divider"></li>
+                                        
+                                        <!-- STUDENT UNSUSPEND LINK -->
+                                        <li>
+                                            <a href="#" onclick="confirm_action('<?php echo base_url();?>index.php?admin/student/<?php echo $class_id;?>/unsuspend/<?php echo $row['student_id'];?>');">
+                                                <i class="entypo-cw"></i>
+                                                    <?php echo get_phrase('unsuspend_');?>
+                                                </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                            </td>
+                        </tr>
+                        <?php endforeach;?>
+                    </tbody>
+                </table>
+
+            </div>
+            
+            
         <?php 
             $query = $this->db->get_where('section' , array('class_id' => $class_id));
             if ($query->num_rows() > 0):

@@ -18,7 +18,7 @@
 				<div class="tab-pane active" id="unpaid">
 
 				<!-- creation of single invoice -->
-				<?php echo form_open(base_url() . 'index.php?admin/invoice/create' , array('class' => 'form-horizontal form-groups-bordered validate','target'=>'_top'));?>
+				<?php echo form_open(base_url() . 'index.php?admin/invoice/create' , array('id'=>'frm_single_invoice','class' => 'form-horizontal form-groups-bordered validate','target'=>'_top'));?>
 				<div class="row">
 					<div class="col-md-6">
 	                        <div class="panel panel-default panel-shadow" data-collapsed="0">
@@ -57,13 +57,24 @@
 	                                <div class="form-group">
 	                                    <label class="col-sm-3 control-label"><?php echo get_phrase('year');?></label>
 	                                    <div class="col-sm-9">
-	                                        <input type="text" class="form-control" min="2010" max="2050" name="title" onblur='return get_total_fees()' id='fees_structure_year'/>
+	                                        <input type="text" class="form-control" min="2010" max="2050" name="yr" onblur='return get_total_fees()' id='fees_structure_year'/>
 	                                    </div>
 	                                </div>
 	                                <div class="form-group">
 	                                    <label class="col-sm-3 control-label"><?php echo get_phrase('term');?></label>
 	                                    <div class="col-sm-9">
-	                                        <input type="text" class="form-control" min="1" max="3" id="fees_structure_term" onblur='return get_total_fees()' name="description"/>
+	                                        <!--<input type="text" class="form-control" min="1" max="3" id="fees_structure_term" onblur='return get_total_fees()' name="description"/>-->
+	                                        <select name="term" class="form-control" id="fees_structure_term" onchange='return get_total_fees()'>
+	                                        	<option value=""><?php echo get_phrase('select');?></option>
+	                                        	<?php
+	                                        		$terms = $this->db->get('terms')->result_object();
+	                                        		foreach($terms as $rows):
+	                                        	?>
+	                                        		<option value="<?php echo $rows->term_number;?>"><?php echo $rows->name;?></option>
+	                                        	<?php
+	                                        		endforeach;
+	                                        	?>
+	                                        </select>
 	                                    </div>
 	                                </div>
 
@@ -86,47 +97,44 @@
                             <div class="panel-body">
                                 
                                 <div class="form-group">
-                                    <label class="col-sm-3 control-label"><?php echo get_phrase('total');?></label>
+                                    <label class="col-sm-3 control-label"><?php echo get_phrase('total_payable');?></label>
                                     <div class="col-sm-9">
-                                        <input type="text" class="form-control" name="amount"
-                                            placeholder="<?php echo get_phrase('enter_total_amount');?>" id='total_fees_amount'/>
+                                        <input type="text" value="0" class="form-control" name="amount" readonly="readonly" placeholder="<?php echo get_phrase('enter_total_amount');?>" id='total_fees_amount'/>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                	<label class="col-sm-3 control-label"><?php echo get_phrase('fee_items');?></label>
+                                	<div class="col-sm-9">
+                                		<table class="table">
+                                			<thead>
+                                				<tr>
+                                					<th><?=get_phrase('full_payment');?></th>
+                                					<th><?=get_phrase('item');?></th>
+                                					<th><?=get_phrase('fee_structure_amount');?></th>
+                                					<th><?=get_phrase('amount_payable');?></th>
+                                				</tr>
+                                			</thead>
+                                			<tbody id="fee_items">
+                                				
+                                			</tbody>
+                                		</table>
+                                	</div>	
+								</div>
+							
+                                <div class="form-group">
+                                    <label class="col-sm-3 control-label"><?php echo get_phrase('due_payment');?></label>
+                                    <div class="col-sm-9">
+                                        <input type="text" class="form-control" id="amount_due" name="amount_due" value="0" readonly="readonly" placeholder="<?php echo get_phrase('enter_payable_amount');?>"/>
                                     </div>
                                 </div>
 
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label"><?php echo get_phrase('payment');?></label>
-                                    <div class="col-sm-9">
-                                        <input type="text" class="form-control" name="amount_paid"
-                                            placeholder="<?php echo get_phrase('enter_payment_amount');?>"/>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label"><?php echo get_phrase('status');?></label>
-                                    <div class="col-sm-9">
-                                        <select name="status" class="form-control">
-                                            <!--<option value="paid"><?php echo get_phrase('paid');?></option>-->
-                                            <option value="unpaid"><?php echo get_phrase('unpaid');?></option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label class="col-sm-3 control-label"><?php echo get_phrase('method');?></label>
-                                    <div class="col-sm-9">
-                                        <select name="method" class="form-control">
-                                            <option value="1"><?php echo get_phrase('cash');?></option>
-                                            <option value="2"><?php echo get_phrase('check');?></option>
-                                            <option value="3"><?php echo get_phrase('card');?></option>
-                                        </select>
-                                    </div>
-                                </div>
                                 
                             </div>
                         </div>
                         <div class="form-group">
                             <div class="col-sm-5">
-                                <button type="submit" class="btn btn-info"><?php echo get_phrase('add_invoice');?></button>
+                                <button type="submit" id="btn-single" class="btn btn-info"><?php echo get_phrase('create_invoice');?></button>
                             </div>
                         </div>
                     </div>
@@ -169,53 +177,61 @@
                     <div class="form-group">
                         <label class="col-sm-3 control-label"><?php echo get_phrase('year');?></label>
                         <div class="col-sm-9">
-                            <input type="text" class="form-control" min="2010" max="2050" name="title" id='fees_mass_structure_year'/>
+                            <input type="text" class="form-control" min="2010" max="2050" name="yr" id='fees_mass_structure_year'/>
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="col-sm-3 control-label"><?php echo get_phrase('term');?></label>
                         <div class="col-sm-9">
-                            <input type="text" class="form-control" min="1" max="3" name="description" id='fees_mass_structure_term'  onblur='return get_mass_total_fees()'/>
+                            <!--<input type="text" class="form-control" min="1" max="3" name="term" id='fees_mass_structure_term'  onblur='return get_mass_total_fees()'/>-->
+                            <select name="term" class="form-control" id="fees_mass_structure_term" onchange='return get_mass_total_fees()'>
+	                                        	<option value=""><?php echo get_phrase('select');?></option>
+	                                        	<?php
+	                                        		$terms = $this->db->get('terms')->result_object();
+	                                        		foreach($terms as $rows):
+	                                        	?>
+	                                        		<option value="<?php echo $rows->term_number;?>"><?php echo $rows->name;?></option>
+	                                        	<?php
+	                                        		endforeach;
+	                                        	?>
+	                        </select>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label class="col-sm-3 control-label"><?php echo get_phrase('total');?></label>
+                        <label class="col-sm-3 control-label"><?php echo get_phrase('total_payable');?></label>
                         <div class="col-sm-9">
-                            <input type="text" class="form-control" name="amount"
-                                placeholder="<?php echo get_phrase('enter_total_amount');?>"  id='total_mass_fees_amount'/>
+                            <input type="text" class="form-control" name="amount" readonly="readonly" placeholder="<?php echo get_phrase('enter_total_amount');?>"  id='total_mass_fees_amount'/>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                                	<label class="col-sm-3 control-label"><?php echo get_phrase('fee_items');?></label>
+                                	<div class="col-sm-9">
+                                		<table class="table">
+                                			<thead>
+                                				<tr>
+                                					<th><?=get_phrase('full_payment');?></th>
+                                					<th><?=get_phrase('item');?></th>
+                                					<th><?=get_phrase('fee_structure_amount');?></th>
+                                					<th><?=get_phrase('amount_payable');?></th>
+                                				</tr>
+                                			</thead>
+                                			<tbody id="mass_fee_items">
+                                				
+                                			</tbody>
+                                		</table>
+                                	</div>	
+					</div>
+
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label"><?php echo get_phrase('due_payment');?></label>
+                        <div class="col-sm-9">
+                            <input type="text" class="form-control" id="mass_amount_due" name="amount_due" readonly="readonly" placeholder="<?php echo get_phrase('enter_payment_amount');?>" value="0"/>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="col-sm-3 control-label"><?php echo get_phrase('payment');?></label>
-                        <div class="col-sm-9">
-                            <input type="text" class="form-control" name="amount_paid"
-                                placeholder="<?php echo get_phrase('enter_payment_amount');?>"/>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="col-sm-3 control-label"><?php echo get_phrase('status');?></label>
-                        <div class="col-sm-9">
-                            <select name="status" class="form-control">
-                                <!--<option value="paid"><?php echo get_phrase('paid');?></option>-->
-                                <option value="unpaid"><?php echo get_phrase('unpaid');?></option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="col-sm-3 control-label"><?php echo get_phrase('method');?></label>
-                        <div class="col-sm-9">
-                            <select name="method" class="form-control">
-                                <option value="1"><?php echo get_phrase('cash');?></option>
-                                <option value="2"><?php echo get_phrase('check');?></option>
-                                <option value="3"><?php echo get_phrase('card');?></option>
-                            </select>
-                        </div>
-                    </div>
 
                     <div class="form-group">
                         <label class="col-sm-3 control-label"><?php echo get_phrase('date');?></label>
@@ -226,7 +242,7 @@
 
                     <div class="form-group">
                         <div class="col-sm-5 col-sm-offset-3">
-                            <button type="submit" class="btn btn-info"><?php echo get_phrase('add_invoice');?></button>
+                            <button type="submit" class="btn btn-info"><?php echo get_phrase('create_invoice');?></button>
                         </div>
                     </div>
                     
@@ -291,11 +307,88 @@
             url: '<?php echo base_url();?>index.php?admin/get_total_fees/' + fees_structure_term +'/'+ fees_structure_year + '/'+ fees_structure_class,
             success: function(response)
             {
-               jQuery('#total_fees_amount').val(response);
-               
+
+            		jQuery('#total_fees_amount').val(response);
             }
         });
     }
+    
+    $("#fees_structure_class,#fees_structure_year,#fees_structure_term").change(function(){
+    		var fees_structure_class = $("#fees_structure_class").val();
+    		var fees_structure_year = $("#fees_structure_year").val();
+    		var fees_structure_term = $("#fees_structure_term").val();
+    		var student = $('#student_selection_holder').val();
+    	    $.ajax({
+            url: '<?php echo base_url();?>index.php?admin/get_fees_items/' + fees_structure_term +'/'+ fees_structure_year + '/'+ fees_structure_class + '/' + student,
+            success: function(response)
+            {
+
+            		jQuery('#fee_items').html(response);
+
+					var total_payable = 0;
+		    		$('.payable_items').each(function(){
+		    			var to_add = 0;
+		    			if($(this).val()!==""){
+		    				to_add = $(this).val();
+		    			}
+		    			total_payable=parseInt(total_payable)+parseInt(to_add);
+		    		});
+		    		$('#amount_due').val(total_payable);
+		    		
+		    		if($('#amount_due').val()>0){
+		    			
+		    			$('#btn-single').html('<?php echo get_phrase('edit_invoice');?>')
+		    			
+		    			$('#frm_single_invoice').attr('action','<?php echo base_url();?>index.php?admin/invoice/edit/'+$('#edit_invoice_id').val());
+		    		}
+            }
+        });    	
+    });
+    
+    function get_full_amount(id){
+    	if($('#chk_'+id).is(':checked')){
+    		$('#payable_'+id).val($('#full_amount_'+id).html());
+    		
+    		var total_payable = 0;
+    		$('.payable_items').each(function(){
+    			var to_add = 0;
+    			if($(this).val()!==""){
+    				to_add = $(this).val();
+    			}
+    			total_payable=parseInt(total_payable)+parseInt(to_add);
+    		});
+    		$('#amount_due').val(total_payable);
+    		
+    	}else{
+    		
+    		var total_payable = $('#amount_due').val()-$('#payable_'+id).val();
+    		
+    		$('#amount_due').val(total_payable);
+    		
+    		$('#payable_'+id).val('0');
+    		
+    		
+    	}
+    	
+    	
+    }
+    
+    function get_payable_amount(id){
+
+    	  var total_payable = 0;
+    		$('.payable_items').each(function(){
+    			var to_add = 0;
+    			if($(this).val()!==""){
+    				to_add = $(this).val();
+    			}
+    			total_payable=parseInt(total_payable)+parseInt(to_add);
+    		});
+    		$('#amount_due').val(total_payable);
+    		
+    		$('#chk_'+id).prop('checked',false);
+    	
+    }
+    
         function get_mass_total_fees(){
     		var fees_structure_class = $("#fees_mass_structure_class").val();
     		var fees_structure_year = $("#fees_mass_structure_year").val();
@@ -309,6 +402,66 @@
             }
         });
     }
+    
+ 	$('#fees_mass_structure_class,#fees_mass_structure_year,#fees_mass_structure_term').change(function(){
+ 			var fees_structure_class = $("#fees_mass_structure_class").val();
+    		var fees_structure_year = $("#fees_mass_structure_year").val();
+    		var fees_structure_term = $("#fees_mass_structure_term").val();
+    		
+	    	$.ajax({
+	            url: '<?php echo base_url();?>index.php?admin/get_mass_fees_items/' + fees_structure_term +'/'+ fees_structure_year + '/'+ fees_structure_class,
+	            success: function(response)
+	            {
+	               jQuery('#mass_fee_items').html(response);
+	               
+	            }
+	        });
+ 	});
+ 	
+ 	function get_mass_full_amount(id){
+    	if($('#mass_chk_'+id).is(':checked')){
+    		$('#mass_payable_'+id).val($('#mass_full_amount_'+id).html());
+    		
+    		var total_payable = 0;
+    		$('.mass_payable_items').each(function(){
+    			var to_add = 0;
+    			if($(this).val()!==""){
+    				to_add = $(this).val();
+    			}
+    			total_payable=parseInt(total_payable)+parseInt(to_add);
+    		});
+    		$('#mass_amount_due').val(total_payable);
+    		
+    	}else{
+    		
+    		var total_payable = $('#mass_amount_due').val()-$('#mass_payable_'+id).val();
+    		
+    		$('#mass_amount_due').val(total_payable);
+    		
+    		$('#mass_payable_'+id).val('0');
+    		
+    		
+    	}
+    	
+    	
+    }
+    
+      function get_mass_payable_amount(id){
+
+    	  var total_payable = 0;
+    		$('.mass_payable_items').each(function(){
+    			var to_add = 0;
+    			if($(this).val()!==""){
+    				to_add = $(this).val();
+    			}
+    			total_payable=parseInt(total_payable)+parseInt(to_add);
+    		});
+    		$('#mass_amount_due').val(total_payable);
+    		
+    		$('#mass_chk_'+id).prop('checked',false);
+    	
+    }  
+    
 </script>
 
 <script type="text/javascript">

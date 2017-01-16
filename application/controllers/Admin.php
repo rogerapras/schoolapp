@@ -191,12 +191,66 @@ class Admin extends CI_Controller
 		
         if ($param2 == 'delete') {
             $this->db->where('student_id', $param3);
-            $this->db->delete('student');
-            $this->session->set_flashdata('flash_message' , get_phrase('data_deleted'));
+			$data['active'] = 0;
+			
+			$this->db->update('student',$data);
+            //$this->db->delete('student');
+            $this->session->set_flashdata('flash_message' , get_phrase('student_suspended'));
             redirect(base_url() . 'index.php?admin/student_information/' . $param1, 'refresh');
         }
+		
+		if($param2==='unsuspend'){
+            $this->db->where('student_id', $param3);
+			$data['active'] = 1;
+			
+			$this->db->update('student',$data);
+            //$this->db->delete('student');
+            $this->session->set_flashdata('flash_message' , get_phrase('student_reinstated'));
+            redirect(base_url() . 'index.php?admin/student_information/' . $param1, 'refresh');			
+		}
     }
      /****MANAGE PARENTS CLASSWISE*****/
+
+    function school_settings($param1="",$param2=""){
+        if ($this->session->userdata('admin_login') != 1)
+            redirect(base_url() . 'index.php?login', 'refresh');
+		
+		if($param1==='add_term'){
+			
+			$data['name']=$this->input->post('term');
+			$data['name_number']=$this->input->post('term_number');
+			
+			$this->db->insert('terms',$data);
+			
+            $this->session->set_flashdata('flash_message' , get_phrase('term_added'));
+            redirect(base_url() . 'index.php?admin/school_settings/', 'refresh');
+		}
+		if($param1==='edit_term'){
+			$this->db->where(array('terms_id'=>$param2));
+			
+			$data['name'] = $this->input->post('term');
+			$data['term_number'] = $this->input->post('term_number');
+			
+			$this->db->update('terms',$data);
+			
+			$this->session->set_flashdata('flash_message' , get_phrase('term_editted'));
+            redirect(base_url() . 'index.php?admin/school_settings/', 'refresh');
+		}
+		if($param1=='delete_term'){
+			$this->db->where(array('terms_id'=>$param2));
+			
+			$this->db->delete('terms');
+			
+			$this->session->set_flashdata('flash_message' , get_phrase('term_deleted'));
+            redirect(base_url() . 'index.php?admin/school_settings/', 'refresh');
+		}
+			    	
+		$page_data['terms'] = $this->db->get('terms')->result_object();
+        $page_data['page_name']                 = 'school_settings';
+        $page_data['page_title']                = get_phrase('school_settings');
+        $this->load->view('backend/index', $page_data);	
+	}
+     
     function parent($param1 = '', $param2 = '', $param3 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
@@ -445,12 +499,49 @@ class Admin extends CI_Controller
             echo '<option value="' . $row['student_id'] . '">' . $row['name'] . '</option>';
         }
     }
+	
+	function get_mass_fees_items($term,$year,$class){
+		$fees_id = $this->db->get_where('fees_structure',array("term"=>$term,"yr"=>$year,"class_id"=>$class))->row()->fees_id;
+
+		$details = $this->db->get_where('fees_structure_details',array("fees_id"=>$fees_id))->result_object();
+		
+		foreach($details as $row):
+			echo "<tr><td><input type='checkbox' onchange='return get_mass_full_amount(".$row->detail_id.")' id='mass_chk_".$row->detail_id."'/></td><td>".$row->name."</td><td id='mass_full_amount_".$row->detail_id."'>".$row->amount."</td><td><input type='text' onkeyup='return get_mass_payable_amount(".$row->detail_id.")' class='form-control mass_payable_items' id='mass_payable_".$row->detail_id."' name='payable[".$row->detail_id."]'/></td><tr>";
+		endforeach;		
+	}
+	
+	function get_fees_items($term,$year,$class,$student){
+		$fees_id = $this->db->get_where('fees_structure',array("term"=>$term,"yr"=>$year,"class_id"=>$class))->row()->fees_id;
+
+		$details = $this->db->get_where('fees_structure_details',array("fees_id"=>$fees_id))->result_object();
+		
+		//Check if an invoice exists
+		
+		$invoice = $this->db->get_where('invoice',array('student_id'=>$student,'yr'=>$year,'term'=>$term));
+		
+		$invoice_count = $invoice->num_rows();
+		
+		if($invoice_count===0){
+			foreach($details as $row):
+				
+				echo "<tr><td><input type='checkbox' onchange='return get_full_amount(".$row->detail_id.")' id='chk_".$row->detail_id."'/></td><td>".$row->name."</td><td id='full_amount_".$row->detail_id."'>".$row->amount."</td><td><input type='text' onkeyup='return get_payable_amount(".$row->detail_id.")' class='form-control payable_items' id='payable_".$row->detail_id."' name='payable[".$row->detail_id."]'/></td><tr>";
+			endforeach;
+		}else{
+			
+			$amount_due = 0;
+			echo "<input type='hidden' id='edit_invoice_id' value='".$invoice->row()->invoice_id."'/>";
+			foreach($details as $row):
+				
+				$amount_due = $this->db->get_where('invoice_details',array('detail_id'=>$row->detail_id))->row()->amount_due;
+				echo "<tr><td><input type='checkbox' onchange='return get_full_amount(".$row->detail_id.")' id='chk_".$row->detail_id."'/></td><td>".$row->name."</td><td id='full_amount_".$row->detail_id."'>".$row->amount."</td><td><input type='text' onkeyup='return get_payable_amount(".$row->detail_id.")' class='form-control payable_items' id='payable_".$row->detail_id."' name='payable[".$row->detail_id."]' value='".$amount_due."'/></td><tr>";
+			endforeach;
+		}
+	}
 
     function get_class_students_mass($class_id)
     {
-        $students = $this->db->get_where('student' , array(
-            'class_id' => $class_id
-        ))->result_array();
+        $students = $this->db->get_where('student', array('class_id' => $class_id))->result_array();
+		
         echo '<div class="form-group">
                 <label class="col-sm-3 control-label">' . get_phrase('students') . '</label>
                 <div class="col-sm-9">';
@@ -778,63 +869,109 @@ class Admin extends CI_Controller
         
         if ($param1 == 'create') {
             $data['student_id']         = $this->input->post('student_id');
-            $data['title']              = $this->input->post('title');
-            $data['description']        = $this->input->post('description');
+            $data['yr']              = $this->input->post('yr');
+            $data['term']        = $this->input->post('term');
             $data['amount']             = $this->input->post('amount');
-            $data['amount_paid']        = $this->input->post('amount_paid');
-            $data['due']                = $data['amount'] - $data['amount_paid'];
-            $data['status']             = $this->input->post('status');
+            $data['amount_due']        = $this->input->post('amount_due');
+            $data['status']             = "unpaid";//$this->input->post('status');
             $data['creation_timestamp'] = strtotime($this->input->post('date'));
             
             $this->db->insert('invoice', $data);
-           /* $invoice_id = $this->db->insert_id();
+			
+			$invoice_id = $this->db->insert_id();
+			
+			$structure_ids = $this->input->post('detail_id');
+			$payable_amount = $this->input->post('payable');
+			
+			foreach($payable_amount as $key=>$value):
+				$data2['invoice_id'] = $invoice_id;
+				$data2['detail_id'] = $key;
+				$data2['amount_due'] = $value;
+				
+				$this->db->insert('invoice_details',$data2);			
+			endforeach;
 
-            $data2['invoice_id']        =   $invoice_id;
-            $data2['student_id']        =   $this->input->post('student_id');
-            $data2['title']             =   $this->input->post('title');
-            $data2['description']       =   $this->input->post('description');
-            $data2['payment_type']      =  'income';
-            $data2['method']            =   $this->input->post('method');
-            $data2['amount']            =   $this->input->post('amount_paid');
-            $data2['timestamp']         =   strtotime($this->input->post('date'));
-
-            $this->db->insert('payment' , $data2);
-			*/
-            $this->session->set_flashdata('flash_message' , get_phrase('data_added_successfully'));
+            $this->session->set_flashdata('flash_message' , get_phrase('invoice_created_successfully'));
             redirect(base_url() . 'index.php?admin/student_payment', 'refresh');
         }
 
+		if($param1==="edit"){
+	
+			$structure_ids = $this->input->post('detail_id');
+			$payable_amount = $this->input->post('payable');
+			
+			foreach($payable_amount as $key=>$value):
+				
+				//Check structure details id in invoices
+				
+				$details_id_check = $this->db->get_where('invoice_details',array('invoice_id'=>$param2,'detail_id'=>$key))->num_rows();
+				if($details_id_check>0){
+					$this->db->where(array('invoice_id'=>$param2,'detail_id'=>$key));
+					
+					$data['amount_due'] = $value;
+					
+					$this->db->update('invoice_details',$data);	
+				}else{
+					$data['invoice_id'] = $param2;
+					$data['detail_id'] = $key;
+					$data['amount_due'] = $value;
+				
+					$this->db->insert('invoice_details',$data);
+				}
+							
+			endforeach;
+
+            $this->session->set_flashdata('flash_message' , get_phrase('invoice_editted_successfully'));
+            redirect(base_url() . 'index.php?admin/student_payment', 'refresh');			
+		}
+
         if ($param1 == 'create_mass_invoice') {
-            if (!($this->input->post('student_id'))) {
+        	
+			//Count students with Invoices
+					
+			$cnt = 0;
+					
+			foreach($this->input->post('student_id') as $rows){
+				if($this->db->get_where('invoice',array('student_id'=>$rows,'yr'=>$this->input->post('yr'),'term'=>$this->input->post('term')))->num_rows()>0){
+					$cnt++;
+				}
+			}
+            if ($cnt===0) {
                 foreach ($this->input->post('student_id') as $id) {
 
                     $data['student_id']         = $id;
-                    $data['title']              = $this->input->post('title');
-                    $data['description']        = $this->input->post('description');
+                    $data['yr']              = $this->input->post('yr');
+                    $data['term']        = $this->input->post('term');
                     $data['amount']             = $this->input->post('amount');
-                    $data['amount_paid']        = $this->input->post('amount_paid');
-                    $data['due']                = $data['amount'] - $data['amount_paid'];
-                    $data['status']             = $this->input->post('status');
+                    $data['amount_due']        = $this->input->post('amount_due');
+                    $data['status']             = 'unpaid';
                     $data['creation_timestamp'] = strtotime($this->input->post('date'));
                     
                     $this->db->insert('invoice', $data);
-                   /* $invoice_id = $this->db->insert_id();
-
-                    $data2['invoice_id']        =   $invoice_id;
-                    $data2['student_id']        =   $id;
-                    $data2['title']             =   $this->input->post('title');
-                    $data2['description']       =   $this->input->post('description');
-                    $data2['payment_type']      =  'income';
-                    $data2['method']            =   $this->input->post('method');
-                    $data2['amount']            =   $this->input->post('amount_paid');
-                    $data2['timestamp']         =   strtotime($this->input->post('date'));
-
-                    $this->db->insert('payment' , $data2);
-					*/
+					
+		            $invoice_id = $this->db->insert_id();
+					
+					$structure_ids = $this->input->post('detail_id');
+					$payable_amount = $this->input->post('payable');
+					
+					foreach($payable_amount as $key=>$value):
+						$data2['invoice_id'] = $invoice_id;
+						$data2['detail_id'] = $key;
+						$data2['amount_due'] = $value;
+						
+						$this->db->insert('invoice_details',$data2);			
+					endforeach;
+					
                 }
-            }
-            $this->session->set_flashdata('flash_message' , get_phrase('data_added_successfully'));
-            redirect(base_url() . 'index.php?admin/student_payment', 'refresh');
+				
+				$this->session->set_flashdata('flash_message' , get_phrase('invoices_created_successfully'));
+            
+           }else{
+           		$this->session->set_flashdata('flash_message' , get_phrase('failed:_some_invoices_exists'));
+           }
+		   
+		   redirect(base_url() . 'index.php?admin/student_payment', 'refresh');
+            
         }
 
         if ($param1 == 'do_update') {
@@ -911,7 +1048,7 @@ class Admin extends CI_Controller
         if ($this->session->userdata('admin_login') != 1)
             redirect('login', 'refresh');
         $page_data['page_name']  = 'student_payment';
-        $page_data['page_title'] = get_phrase('create_student_payment');
+        $page_data['page_title'] = get_phrase('create_invoice');
         $this->load->view('backend/index', $page_data); 
     }
 
@@ -1032,10 +1169,10 @@ class Admin extends CI_Controller
         if ($param1 == 'edit') {
             $data['name']   =   $this->input->post('name');
 			$data['class_id']   =   $this->input->post('class_id');
-			$data['income_category_id']   =   $this->input->post('income_category_id');
-			$data['ac_year']   =   $this->input->post('ac_year');
+			//$data['income_category_id']   =   $this->input->post('income_category_id');
+			$data['yr']   =   $this->input->post('yr');
 			$data['term']   =   $this->input->post('term');
-			$data['amount']   =   $this->input->post('amount');
+			//$data['amount']   =   $this->input->post('amount');
 			
             $this->db->where('fees_id' , $param2);
             $this->db->update('fees_structure' , $data);
@@ -1678,5 +1815,61 @@ class Admin extends CI_Controller
         ))->result_array();
         $this->load->view('backend/index', $page_data);
     }
+
+	public function budget($param="",$param2=""){
+        if ($this->session->userdata('admin_login') != 1)
+            redirect(base_url() . 'index.php?login', 'refresh');
+		
+		if($param==='create'){
+			
+			$data['expense_category_id'] = $this->input->post('expense_category_id');
+			$data['description'] = $this->input->post('description');
+			$data['fy'] = $this->input->post('fy');
+			$data['qty'] = $this->input->post('qty');
+			$data['unitcost'] = $this->input->post('unitcost');
+			$data['often'] = $this->input->post('often');
+			$data['total'] = $this->input->post('total');
+			
+			$this->db->insert('budget',$data);
+			
+			$insert_id = $this->db->insert_id();
+			
+			$months = $this->input->post('months');
+			
+			for($i=0;$i<count($months);$i++):
+				$data2['month'] = $i+1;
+				$data2['amount'] = $months[$i];
+				$data2['budget_id'] = $insert_id;
+				
+				$this->db->insert('budget_schedule',$data2);
+			
+			endfor;
+
+			$this->session->set_flashdata('flash_message', 'Record Created');
+            redirect(base_url() . 'index.php?admin/budget/', 'refresh');
+		}
+		
+		if($param==='delete_item'){
+			
+			$this->db->where(array('budget_id'=>$param2));
+			
+			$this->db->delete('budget');
+			
+			$this->db->where(array('budget_id'=>$param2));
+			
+			$this->db->delete('budget_schedule');
+			
+			$this->session->set_flashdata('flash_message', 'Record Deleted');
+            redirect(base_url() . 'index.php?admin/budget/', 'refresh');
+		}
+		
+		if($param==='edit_item'){
+			
+		}
+		
+        $page_data['page_name']  = 'budget';
+        $page_data['page_title'] = get_phrase('budget');
+        $this->load->view('backend/index', $page_data);		
+	}
     
 }

@@ -39,7 +39,7 @@ if ( ! function_exists('get_phrase'))
 		
 		// return the current sessioned language field of according phrase, else return uppercase spaced word
 		if (isset($row->$current_language) && $row->$current_language !="")
-			return $row->$current_language;
+			return ucwords($row->$current_language);
 		else 
 			return ucwords(str_replace('_',' ',$phrase));
 	}
