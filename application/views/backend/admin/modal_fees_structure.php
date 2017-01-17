@@ -19,6 +19,7 @@ $structure_details = $this->db->get_where('fees_structure_details', array('fees_
 <caption><?php echo $structure;?></caption>
     <thead>
         <tr>
+        	<th><div><?php echo get_phrase('action');?></div></th>
             <th><div><?php echo get_phrase('name');?></div></th>
             <th><div><?php echo get_phrase('amount');?></div></th>
         </tr>
@@ -29,6 +30,33 @@ $structure_details = $this->db->get_where('fees_structure_details', array('fees_
         	foreach ($structure_details as $row):
         ?>
         <tr>
+        	<td>
+        		<div class="btn-group">
+                    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+                        Action <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-default pull-left" role="menu">
+                        
+                        <!-- Fee Structure Edit Link -->
+                        <li>
+                        	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_structure_details_edit/<?php echo $row['detail_id'];?>');">
+                            	<i class="entypo-pencil"></i>
+									<?php echo get_phrase('edit');?>
+                               	</a>
+                        				</li>
+                        
+                        <li class="divider"></li>                     
+                        
+                        <!-- DELETION LINK -->
+                        <li>
+                        	<a href="#" onclick="confirm_modal('<?php echo base_url();?>index.php?admin/fees_structure_details/delete/<?php echo $row['detail_id'];?>');">
+                            	<i class="entypo-trash"></i>
+									<?php echo get_phrase('delete');?>
+                               	</a>
+                        				</li>
+                    </ul>
+                </div>
+        	</td>
             <td><?php echo $row['name'];?></td>
             <td><?php echo $row['amount'];?></td>
 

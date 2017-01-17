@@ -1240,6 +1240,12 @@ class Admin extends CI_Controller
         if ($param1 == 'delete') {
             $this->db->where('detail_id' , $param2);
             $this->db->delete('fees_structure_details');
+			
+			//Delete all invoice effects
+			$this->db->where('detail_id' , $param2);
+			 $this->db->delete('invoice_details');
+			
+			
             $this->session->set_flashdata('flash_message' , get_phrase('data_deleted'));
             redirect(base_url() . 'index.php?admin/fees_structure');
         }

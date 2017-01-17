@@ -45,22 +45,13 @@ class="btn btn-primary pull-right">
                         
                         <!-- Add Fees Structure Details -->
                          <li>
-                        	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/fees_structure_details/<?php echo $row['fees_id'];?>');">
+                        	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_fees_structure_details/<?php echo $row['fees_id'];?>');">
                             	<i class="entypo-book-open"></i>
 									<?php echo get_phrase('add_fees_structure');?>
                                	</a>
                         </li>
                         <li class="divider"></li>
                         
-                        <!-- Clone Structure Details -->
-                         <li>
-                        	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/poup/modal_clone_fees_structure/<?php echo $row['fees_id'];?>');">
-                            	<i class="entypo-cc"></i>
-									<?php echo get_phrase('clone_fees_structure');?>
-                               	</a>
-                        </li>
-                        
-                        <li class="divider"></li>
                         
                         <!-- VIEW FEES STRUCTURE DETAILS -->
  
@@ -70,18 +61,19 @@ class="btn btn-primary pull-right">
 									<?php echo get_phrase('view_fees_structure');?>
                                	</a>
                         				</li>
-                        <li class="divider"></li>                         
+                        <li class="divider"></li>                            
                         
-                        <!-- Edit Fees Structure Details -->
-                         <li>
-                        	<a href="<?php echo base_url();?>index.php?modal/popup/fees_structure_with_details/<?php echo $row['fees_id'];?>">
-                            	<i class="entypo-adjust"></i>
-									<?php echo get_phrase('edit_fees_structure_details');?>
+                        <!-- Clone Structure Details -->
+                        <li>
+                        	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/poup/modal_clone_structure/<?php echo $row['fees_id'];?>');">
+                            	<i class="entypo-cc"></i>
+									<?php echo get_phrase('clone_fees_structure');?>
                                	</a>
-                        				</li>
-                        <li class="divider"></li>   
-                                             
-                        <!-- teacher DELETION LINK -->
+                        </li>
+                        
+                        <li class="divider"></li>                     
+                        
+                        <!-- DELETION LINK -->
                         <li>
                         	<a href="#" onclick="confirm_modal('<?php echo base_url();?>index.php?admin/fees_structure/delete/<?php echo $row['fees_id'];?>');">
                             	<i class="entypo-trash"></i>
