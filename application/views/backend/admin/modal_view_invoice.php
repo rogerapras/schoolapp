@@ -16,9 +16,9 @@ foreach ($edit_data as $row):
             <tr>
                 <td align="right">
                     <h5><?php echo get_phrase('creation_date'); ?> : <?php echo date('d M,Y', $row['creation_timestamp']);?></h5>
-                    <h5><?php echo get_phrase('year'); ?> : <?php echo $row['title'];?></h5>
-                    <h5><?php echo get_phrase('term'); ?> : <?php echo $row['description'];?></h5>
-                    <h5><?php echo get_phrase('status'); ?> : <?php echo $row['status']; ?></h5>
+                    <h5><?php echo get_phrase('year'); ?> : <?php echo $row['yr'];?></h5>
+                    <h5><?php echo get_phrase('term'); ?> : <?php echo $this->db->get_where('terms',array('term_number'=>$row['term']))->row()->name;?></h5>
+                    <h5><?php echo get_phrase('status'); ?> : <?php echo ucfirst($row['status']); ?></h5>
                 </td>
             </tr>
         </table>
@@ -50,20 +50,74 @@ foreach ($edit_data as $row):
         <table width="100%" border="0">    
             <tr>
                 <td align="right" width="80%"><?php echo get_phrase('total_amount'); ?> :</td>
-                <td align="right"><?php echo $row['amount']; ?></td>
+                <td align="right"><?php echo $row['amount_due']; ?></td>
             </tr>
             <tr>
                 <td align="right" width="80%"><h4><?php echo get_phrase('paid_amount'); ?> :</h4></td>
                 <td align="right"><h4><?php echo $row['amount_paid']; ?></h4></td>
             </tr>
-            <?php if ($row['due'] != 0):?>
+            <?php if ($row['balance'] != 0):?>
             <tr>
                 <td align="right" width="80%"><h4><?php echo get_phrase('due'); ?> :</h4></td>
-                <td align="right"><h4><?php echo $row['due']; ?></h4></td>
+                <td align="right"><h4><?php echo $row['balance']; ?></h4></td>
             </tr>
             <?php endif;?>
         </table>
+        
+        <hr>
+        
+        <h4><?php echo get_phrase('invoice_breakdown'); ?></h4>
 
+		<table class="table table-bordered" width="100%" border="1" style="border-collapse:collapse;">
+            <thead>
+                <tr>
+                    <th><?php echo get_phrase('item');?></th>
+					<th><?php echo get_phrase('amount_payable');?></th>
+					<th><?php echo get_phrase('paid');?></th>
+					<th><?php echo get_phrase('balance');?></th>
+					
+                </tr>
+            </thead>
+            <tbody>
+            	<?php
+					$invoice_details = $this->db->get_where('invoice_details',array('invoice_id'=>$row['invoice_id']))->result_object();
+										
+					$tot_due = 0;
+					$tot_paid = 0;
+					$tot_bal = 0;
+										
+					foreach($invoice_details as $inv):
+				?>
+					<tr>
+						<td><?php echo $this->db->get_where('fees_structure_details',array('detail_id'=>$inv->detail_id))->row()->name;?></td>
+						<td><?php echo $inv->amount_due;?></td>
+							<?php
+								$paid = 0;
+												
+								if($this->db->get_where('payment',array('invoice_id'=>$inv->invoice_id,'detail_id'=>$inv->detail_id))->num_rows()>0){
+									$paid = $this->db->select_sum('amount')->get_where('payment',array('invoice_id'=>$row['invoice_id'],'detail_id'=>$inv->detail_id))->row()->amount;
+								} 
+												
+								$detail_bal = $inv->amount_due-$paid;
+					?>
+						<td><?php echo $paid;?></td>
+						<td><?php echo $detail_bal;?></td>
+						
+					</tr>
+									
+					<?php
+										
+						$tot_due += $inv->amount_due;
+						$tot_paid += $paid;
+						$tot_bal += $detail_bal;
+										
+						endforeach;
+					?>
+						<tr><td>Totals</td><td><?php echo number_format($tot_due,2);?></td><td><?php echo number_format($tot_paid,2);?></td><td><?php echo number_format($tot_bal,2);?></td></tr>
+            </tbody>
+          	
+		</table>
+		
         <hr>
 
         <!-- payment history -->
@@ -73,7 +127,7 @@ foreach ($edit_data as $row):
                 <tr>
                     <th><?php echo get_phrase('date'); ?></th>
                     <th><?php echo get_phrase('amount'); ?></th>
-                    <th><?php echo get_phrase('income_category'); ?></th>
+                    <th><?php echo get_phrase('item'); ?></th>
                     <th><?php echo get_phrase('method'); ?></th>
                 </tr>
             </thead>
@@ -85,7 +139,7 @@ foreach ($edit_data as $row):
                     <tr>
                         <td><?php echo date("d M, Y", $row2['timestamp']); ?></td>
                         <td><?php echo $row2['amount']; ?></td>
-                        <td><?php echo $this->crud_model->get_income_category_name($row2['income_category_id']);?></td>
+                        <td><?php echo $this->db->get_where('fees_structure_details',array('detail_id'=>$row2['detail_id']))->row()->name;?></td>
                         <td>
                             <?php 
                                 if ($row2['method'] == 1)

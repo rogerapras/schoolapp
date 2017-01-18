@@ -7,6 +7,13 @@
 						<span class="hidden-xs"><?php echo get_phrase('unpaid_invoices');?></span>
 					</a>
 				</li>
+				
+				<li class="">
+					<a href="#cleared" data-toggle="tab">
+						<span class="hidden-xs"><?php echo get_phrase('cleared_invoices');?></span>
+					</a>
+				</li>
+				
 				<li>
 					<a href="#paid" data-toggle="tab">
 						<span class="hidden-xs"><?php echo get_phrase('payment_history');?></span>
@@ -93,6 +100,66 @@
                 </table>
 					
 				</div>
+				
+				<div class="tab-pane" id="cleared">
+						
+					<table  class="table table-bordered datatable example">
+                	<thead>
+                		<tr>
+                			<th>#</th>
+                    		<th><div><?php echo get_phrase('student');?></div></th>
+                    		<th><div><?php echo get_phrase('year');?></div></th>
+                            <th><div><?php echo get_phrase('fee_structure_total');?></div></th>
+                            <th><div><?php echo get_phrase('payable_amount');?></div></th>
+                            <th><div><?php echo get_phrase('balance');?></div></th>
+                    		<th><div><?php echo get_phrase('date');?></div></th>
+							<th><div><?php echo get_phrase('action');?></div></th>
+						</tr>
+					</thead>
+                    <tbody>
+                    	<?php
+                    		$count = 1;
+                    		$this->db->where('status' , 'paid');
+                    		$this->db->order_by('creation_timestamp' , 'desc');
+                    		$invoices = $this->db->get('invoice')->result_array();
+                    		foreach($invoices as $row3):
+                    	?>
+                        <tr>
+                        	<td><?php echo $count++;?></td>
+							<td><?php echo $this->crud_model->get_type_name_by_id('student',$row3['student_id']);?></td>
+							<td><?php echo $row3['yr'];?></td>
+							<td><?php echo $row3['amount'];?></td>
+                            <td><?php echo $row3['amount_due'];?></td>
+                            <?php
+                            	$bal = $row3['amount_due'] - $row3['amount_paid']; 
+                            ?>
+                            <td><?php echo $bal;?></td>
+							<td><?php echo date('d M,Y', $row3['creation_timestamp']);?></td>
+							<td>
+								<div class="btn-group">
+                                <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+                                    Action <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-default pull-right" role="menu">
+
+
+                                    <li>
+                                        <a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_view_invoice/<?php echo $row3['invoice_id'];?>');">
+                                            <i class="entypo-bookmarks"></i>
+                                                <?php echo get_phrase('view_history');?>
+                                        </a>
+                                    </li>
+
+                                </ul>
+                            </div>
+							</td>
+                        </tr>
+                        <?php endforeach;?>
+                    </tbody>
+                </table>
+									
+				</div>
+				
 				<div class="tab-pane" id="paid">
 					
 					<table class="table table-bordered datatable example">

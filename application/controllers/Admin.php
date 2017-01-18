@@ -998,19 +998,23 @@ class Admin extends CI_Controller
 			$this->db->select_max('serial');
 			$res = $this->db->get("payment")->row()->serial;
 			
+			$invoice_details = $this->db->get_where('invoice_details',array('invoice_id'=>$this->input->post('invoice_id')))->result_object();
+			
 			$take_payment = $this->input->post('take_payment');
 			
-			foreach($take_payment as $key=>$value){
+			foreach($invoice_details as $key=>$value){
+				if($take_payment[$key]!=='0'){
 					$data['invoice_id']   =   $this->input->post('invoice_id');
 		            $data['student_id']   =   $this->input->post('student_id');
 		            $data['yr']        =   $this->input->post('yr');
 					$data['serial'] = $res+1;
-					$data['detail_id']  =   $key;
+					$data['detail_id']  =   $value->detail_id;
 		            $data['term']  =   $this->input->post('term');
 		            $data['method']       =   $this->input->post('method');
-		            $data['amount']       =   $value;
+		            $data['amount']       =   $take_payment[$key];
 		            $data['timestamp']    =   strtotime($this->input->post('timestamp'));
-		            $this->db->insert('payment' , $data);	
+		            $this->db->insert('payment' , $data);
+		          }	
 			}
 			
             
@@ -1020,9 +1024,17 @@ class Admin extends CI_Controller
             $this->db->set('amount_paid', 'amount_paid + ' . $data2['amount_paid'], FALSE);
             $this->db->set('balance', 'balance - ' . $data2['amount_paid'], FALSE);
             $this->db->update('invoice');
+			
+			$bal = $this->db->get_where('invoice',array('invoice_id'=>$param2))->row()->balance;
+			
+			if($bal<=0){
+				$data3['status']   =   'paid';
+            	$this->db->where('invoice_id' , $param2);
+				$this->db->update('invoice',$data3);
+			}
 
             $this->session->set_flashdata('flash_message' , get_phrase('payment_successfull'));
-            redirect(base_url() . 'index.php?admin/invoice', 'refresh');
+            redirect(base_url() . 'index.php?admin/income', 'refresh');
         }
 
         if ($param1 == 'delete') {

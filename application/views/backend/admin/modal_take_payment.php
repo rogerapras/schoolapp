@@ -19,13 +19,14 @@ $row = $edit_data[0];
                 			<td>#</td>
                 			<td><?php echo get_phrase('amount');?></td>
                 			<td><?php echo get_phrase('method');?></td>
-                			<td><?php echo get_phrase('Income Category');?></td>
+                			<td><?php echo get_phrase('item');?></td>
                 			<td><?php echo get_phrase('date');?></td>
                 		</tr>
                 	</thead>
                 	<tbody>
                 	<?php 
                 		$count = 1;
+						//$this->db->group_by(array('timestamp','detail_id'));
                 		$payments = $this->db->get_where('payment' , array(
                 			'invoice_id' => $row['invoice_id']
                 		))->result_array();
@@ -46,7 +47,7 @@ $row = $edit_data[0];
                                         echo 'paypal';
                 				?>
                 			</td>
-                			<td><?php echo $this->crud_model->get_income_category_name($row2['income_category_id']);?></td>
+                			<td><?php echo $this->db->get_where('fees_structure_details',array('detail_id'=>$row2['detail_id']))->row()->name;?></td>
                 			<td><?php echo date('d M,Y', $row2['timestamp']);?></td>
                 		</tr>
                 	<?php endforeach;?>
@@ -66,30 +67,14 @@ $row = $edit_data[0];
             </div>
             <div class="panel-body">
 				<?php echo form_open(base_url() . 'index.php?admin/invoice/take_payment/'.$row['invoice_id'], array(
-					'class' => 'form-horizontal form-groups-bordered validate','target'=>'_top'));?>
+					'class' => 'form-horizontal form-groups-bordered validate','target'=>'_top','id'=>'frm_payment'));?>
 
-					<div class="form-group">
-		                <label class="col-sm-3 control-label"><?php echo get_phrase('invoice_total');?></label>
-		                <div class="col-sm-6">
-		                    <input type="text" class="form-control" value="<?php echo $row['amount_due'];?>" readonly/>
-		                </div>
-		            </div>
+		
+		           <input type="hidden" class="form-control" value="<?php echo $row['amount_due'];?>" readonly/>
+		           <input type="hidden" class="form-control" name="amount_paid" value="<?php echo $row['amount_paid'];?>" readonly/>
+					<?php $bal = $row['amount_due'] - $row['amount_paid'];?>
+		           <input type="hidden" id="get_bal" class="form-control" value="<?php echo $bal;?>" readonly/>
 
-		            <div class="form-group">
-		                <label class="col-sm-3 control-label"><?php echo get_phrase('amount_paid');?></label>
-		                <div class="col-sm-6">
-		                    <input type="text" class="form-control" name="amount_paid" value="<?php echo $row['amount_paid'];?>" readonly/>
-		                </div>
-		            </div>
-					<?php
-                        	$bal = $row['amount_due'] - $row['amount_paid']; 
-                    ?>
-		            <div class="form-group">
-		                <label class="col-sm-3 control-label"><?php echo get_phrase('balance');?></label>
-		                <div class="col-sm-6">
-		                    <input type="text" class="form-control" value="<?php echo $bal;?>" readonly/>
-		                </div>
-		            </div>
 		            
 		            <div class="form-group">
 		                <label class="col-sm-offset-6 control-label"><?php echo get_phrase('payment');?></label>
@@ -100,15 +85,20 @@ $row = $edit_data[0];
 							<table class="table">
 								<thead>
 									<tr>
-										<th>Item</th>
-										<th>Amount Payable</th>
-										<th>Balance</th>
-										<th>Payment</th>
+										<th><?php echo get_phrase('item');?></th>
+										<th><?php echo get_phrase('amount_payable');?></th>
+										<th><?php echo get_phrase('paid');?></th>
+										<th><?php echo get_phrase('balance');?></th>
+										<th><?php echo get_phrase('payment');?></th>
 									</tr>
 								</thead>
 								<tbody>
 									<?php
 										$invoice_details = $this->db->get_where('invoice_details',array('invoice_id'=>$row['invoice_id']))->result_object();
+										
+										$tot_due = 0;
+										$tot_paid = 0;
+										$tot_bal = 0;
 										
 										foreach($invoice_details as $inv):
 									?>
@@ -124,24 +114,31 @@ $row = $edit_data[0];
 												
 												$detail_bal = $inv->amount_due-$paid;
 											?>
+											<td><?php echo $paid;?></td>
 											<td><?php echo $detail_bal;?></td>
-											<td><input type="text" class="form-control" name="take_payment['<?php echo $inv->detail_id;?>']" id="" value="0"/></td>
+											<td><input type="text" onkeyup="return get_total_payment();" class="form-control paying" name="take_payment[]" id="" value="0"/></td>
 										</tr>
 									
 									<?php
+										
+										$tot_due += $inv->amount_due;
+										$tot_paid += $paid;
+										$tot_bal += $detail_bal;
+										
 										endforeach;
 									?>
+									<tr><td>Totals</td><td><?php echo number_format($tot_due,2);?></td><td><?php echo number_format($tot_paid,2);?></td><td><?php echo number_format($tot_bal,2);?></td><td><input type="text" class="form-control" name="total_payment" id="total_payment" value="0" readonly="readonly" placeholder="<?php echo get_phrase('enter_payment_amount');?>"/></td></tr>
 								</tbody>
 							</table>
 		                </div>
 		            </div>
 
-		            <div class="form-group">
+		            <!--<div class="form-group">
 		                <label class="col-sm-3 control-label"><?php echo get_phrase('payment');?></label>
 		                <div class="col-sm-6">
 		                    <input type="text" class="form-control" name="total_payment" id="total_payment" value="0" readonly="readonly" placeholder="<?php echo get_phrase('enter_payment_amount');?>"/>
 		                </div>
-		            </div>
+		            </div>-->
 
 		            <div class="form-group">
                         <label class="col-sm-3 control-label"><?php echo get_phrase('method');?></label>
@@ -181,3 +178,25 @@ $row = $edit_data[0];
 
 
 <?php //endforeach;?>
+
+<script>
+	
+	function get_total_payment(){
+		var tot = 0;
+		$('.paying').each(function(){
+			
+			var amt = 0;
+			
+			if(!isNaN(parseInt($(this).val()))/2){
+				amt = $(this).val();
+			}
+			
+			tot = parseInt(tot)+parseInt(amt);
+		});
+		
+		$('#total_payment').val(tot);
+	}
+	
+
+	
+</script>
