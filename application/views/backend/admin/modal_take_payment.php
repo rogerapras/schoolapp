@@ -69,9 +69,9 @@ $row = $edit_data[0];
 					'class' => 'form-horizontal form-groups-bordered validate','target'=>'_top'));?>
 
 					<div class="form-group">
-		                <label class="col-sm-3 control-label"><?php echo get_phrase('total_amount');?></label>
+		                <label class="col-sm-3 control-label"><?php echo get_phrase('invoice_total');?></label>
 		                <div class="col-sm-6">
-		                    <input type="text" class="form-control" value="<?php echo $row['amount'];?>" readonly/>
+		                    <input type="text" class="form-control" value="<?php echo $row['amount_due'];?>" readonly/>
 		                </div>
 		            </div>
 
@@ -81,38 +81,65 @@ $row = $edit_data[0];
 		                    <input type="text" class="form-control" name="amount_paid" value="<?php echo $row['amount_paid'];?>" readonly/>
 		                </div>
 		            </div>
-
+					<?php
+                        	$bal = $row['amount_due'] - $row['amount_paid']; 
+                    ?>
 		            <div class="form-group">
-		                <label class="col-sm-3 control-label"><?php echo get_phrase('due');?></label>
+		                <label class="col-sm-3 control-label"><?php echo get_phrase('balance');?></label>
 		                <div class="col-sm-6">
-		                    <input type="text" class="form-control" value="<?php echo $row['due'];?>" readonly/>
+		                    <input type="text" class="form-control" value="<?php echo $bal;?>" readonly/>
 		                </div>
+		            </div>
+		            
+		            <div class="form-group">
+		                <label class="col-sm-offset-6 control-label"><?php echo get_phrase('payment');?></label>
 		            </div>
 
 		            <div class="form-group">
-		                <label class="col-sm-3 control-label"><?php echo get_phrase('income_category');?></label>
-		                <div class="col-sm-6">
-							<select name="income_category_id" class="form-control select2">
-                              <option value=""><?php echo get_phrase('select');?></option>
-                              <?php 
-								$income_categories = $this->db->get('income_categories')->result_array();
-								foreach($income_categories as $row3):
+		                <div class="col-sm-12">
+							<table class="table">
+								<thead>
+									<tr>
+										<th>Item</th>
+										<th>Amount Payable</th>
+										<th>Balance</th>
+										<th>Payment</th>
+									</tr>
+								</thead>
+								<tbody>
+									<?php
+										$invoice_details = $this->db->get_where('invoice_details',array('invoice_id'=>$row['invoice_id']))->result_object();
+										
+										foreach($invoice_details as $inv):
 									?>
-                            		<option value="<?php echo $row3['income_category_id'];?>">
-										<?php echo $row3['name'];?>
-                                    </option>
-                                <?php
-								endforeach;
-							  ?>
-                          </select>
+										<tr>
+											<td><?php echo $this->db->get_where('fees_structure_details',array('detail_id'=>$inv->detail_id))->row()->name;?></td>
+											<td><?php echo $inv->amount_due;?></td>
+											<?php
+												$paid = 0;
+												
+												if($this->db->get_where('payment',array('invoice_id'=>$inv->invoice_id,'detail_id'=>$inv->detail_id))->num_rows()>0){
+													$paid = $this->db->select_sum('amount')->get_where('payment',array('invoice_id'=>$row['invoice_id'],'detail_id'=>$inv->detail_id))->row()->amount;
+												} 
+												
+												$detail_bal = $inv->amount_due-$paid;
+											?>
+											<td><?php echo $detail_bal;?></td>
+											<td><input type="text" class="form-control" name="take_payment['<?php echo $inv->detail_id;?>']" id="" value="0"/></td>
+										</tr>
+									
+									<?php
+										endforeach;
+									?>
+								</tbody>
+							</table>
 		                </div>
 		            </div>
 
 		            <div class="form-group">
 		                <label class="col-sm-3 control-label"><?php echo get_phrase('payment');?></label>
 		                <div class="col-sm-6">
-		                    <input type="text" class="form-control" name="amount" value=""
-		                    	placeholder="<?php echo get_phrase('enter_payment_amount');?>"/>
+		                    <input type="text" class="form-control" name="total_payment" id="total_payment" value="0" readonly="readonly" placeholder="<?php echo get_phrase('enter_payment_amount');?>"/>
 		                </div>
 		            </div>
 
@@ -137,8 +164,8 @@ $row = $edit_data[0];
 
                     <input type="hidden" name="invoice_id" value="<?php echo $row['invoice_id'];?>">
                     <input type="hidden" name="student_id" value="<?php echo $row['student_id'];?>">
-                    <input type="hidden" name="title" value="<?php echo $row['title'];?>">
-                    <input type="hidden" name="description" value="<?php echo $row['description'];?>">
+                    <input type="hidden" name="yr" value="<?php echo $row['yr'];?>">
+                    <input type="hidden" name="term" value="<?php echo $row['term'];?>">
 
 		            <div class="form-group">
 		                <div class="col-sm-5">

@@ -24,8 +24,9 @@
                 			<th>#</th>
                     		<th><div><?php echo get_phrase('student');?></div></th>
                     		<th><div><?php echo get_phrase('year');?></div></th>
-                            <th><div><?php echo get_phrase('total');?></div></th>
-                            <th><div><?php echo get_phrase('paid');?></div></th>
+                            <th><div><?php echo get_phrase('fee_structure_total');?></div></th>
+                            <th><div><?php echo get_phrase('payable_amount');?></div></th>
+                            <th><div><?php echo get_phrase('balance');?></div></th>
                     		<th><div><?php echo get_phrase('date');?></div></th>
                     		<th><div><?php echo get_phrase('options');?></div></th>
 						</tr>
@@ -41,9 +42,13 @@
                         <tr>
                         	<td><?php echo $count++;?></td>
 							<td><?php echo $this->crud_model->get_type_name_by_id('student',$row['student_id']);?></td>
-							<td><?php echo $row['title'];?></td>
+							<td><?php echo $row['yr'];?></td>
 							<td><?php echo $row['amount'];?></td>
-                            <td><?php echo $row['amount_paid'];?></td>
+                            <td><?php echo $row['amount_due'];?></td>
+                            <?php
+                            	$bal = $row['amount_due'] - $row['amount_paid']; 
+                            ?>
+                            <td><?php echo $bal;?></td>
 							<td><?php echo date('d M,Y', $row['creation_timestamp']);?></td>
 							<td>
                             <div class="btn-group">
@@ -52,7 +57,7 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-default pull-right" role="menu">
 
-                                    <?php if ($row['due'] != 0):?>
+                                    <?php if ($bal != 0):?>
 
                                     <li>
                                         <a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_take_payment/<?php echo $row['invoice_id'];?>');">
@@ -71,32 +76,12 @@
                                             </a>
                                                     </li>
                                     <li class="divider"></li>
-                                    
-                                    <!-- VIEWING FEES STRUCTURE -->
-                                    
-                                    <li>
-                                    	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_view_fees_structure/<?php echo $row['invoice_id'];?>');">
-                                    		<i class="entypo-vcard"></i>
-                                    			<?php echo get_phrase('view_fees_structure');?>
-                                    	</a>
-                                    </li>
-                                    
-                                     <li class="divider"></li>
-                                    
-                                    <!-- EDITING LINK -->
-                                    <li>
-                                        <a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_edit_invoice/<?php echo $row['invoice_id'];?>');">
-                                            <i class="entypo-pencil"></i>
-                                                <?php echo get_phrase('edit');?>
-                                        </a>
-                                    </li>
-                                    <li class="divider"></li>
 
                                     <!-- DELETION LINK -->
                                     <li>
                                         <a href="#" onclick="confirm_modal('<?php echo base_url();?>index.php?admin/invoice/delete/<?php echo $row['invoice_id'];?>');">
                                             <i class="entypo-trash"></i>
-                                                <?php echo get_phrase('delete');?>
+                                                <?php echo get_phrase('delete_invoice');?>
                                             </a>
                                                     </li>
                                 </ul>
@@ -125,15 +110,15 @@
 					    <tbody>
 					        <?php 
 					        	$count = 1;
-					        	$this->db->where('payment_type' , 'income');
+					        	//$this->db->where('payment_type' , 'income');
 					        	$this->db->order_by('timestamp' , 'desc');
 					        	$payments = $this->db->get('payment')->result_array();
 					        	foreach ($payments as $row):
 					        ?>
 					        <tr>
 					            <td><?php echo $count++;?></td>
-					            <td><?php echo $row['title'];?></td>
-					            <td><?php echo $row['description'];?></td>
+					            <td><?php echo $row['yr'];?></td>
+					            <td><?php echo $row['term'];?></td>
 					            <td>
 					            	<?php 
 					            		if ($row['method'] == 1)

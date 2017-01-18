@@ -873,6 +873,7 @@ class Admin extends CI_Controller
             $data['term']        = $this->input->post('term');
             $data['amount']             = $this->input->post('amount');
             $data['amount_due']        = $this->input->post('amount_due');
+			$data['balance']        = $this->input->post('amount_due');
             $data['status']             = "unpaid";//$this->input->post('status');
             $data['creation_timestamp'] = strtotime($this->input->post('date'));
             
@@ -944,6 +945,7 @@ class Admin extends CI_Controller
                     $data['term']        = $this->input->post('term');
                     $data['amount']             = $this->input->post('amount');
                     $data['amount_due']        = $this->input->post('amount_due');
+					$data['balance']        = $this->input->post('amount_due');
                     $data['status']             = 'unpaid';
                     $data['creation_timestamp'] = strtotime($this->input->post('date'));
                     
@@ -996,22 +998,27 @@ class Admin extends CI_Controller
 			$this->db->select_max('serial');
 			$res = $this->db->get("payment")->row()->serial;
 			
-            $data['invoice_id']   =   $this->input->post('invoice_id');
-            $data['student_id']   =   $this->input->post('student_id');
-            $data['title']        =   $this->input->post('title');
-			$data['serial'] = $res+1;
-			$data['income_category_id']        =   $this->input->post('income_category_id');
-            $data['description']  =   $this->input->post('description');
-            $data['payment_type'] =   'income';
-            $data['method']       =   $this->input->post('method');
-            $data['amount']       =   $this->input->post('amount');
-            $data['timestamp']    =   strtotime($this->input->post('timestamp'));
-            $this->db->insert('payment' , $data);
+			$take_payment = $this->input->post('take_payment');
+			
+			foreach($take_payment as $key=>$value){
+					$data['invoice_id']   =   $this->input->post('invoice_id');
+		            $data['student_id']   =   $this->input->post('student_id');
+		            $data['yr']        =   $this->input->post('yr');
+					$data['serial'] = $res+1;
+					$data['detail_id']  =   $key;
+		            $data['term']  =   $this->input->post('term');
+		            $data['method']       =   $this->input->post('method');
+		            $data['amount']       =   $value;
+		            $data['timestamp']    =   strtotime($this->input->post('timestamp'));
+		            $this->db->insert('payment' , $data);	
+			}
+			
+            
 
-            $data2['amount_paid']   =   $this->input->post('amount');
+            $data2['amount_paid']   =   $this->input->post('total_payment');
             $this->db->where('invoice_id' , $param2);
             $this->db->set('amount_paid', 'amount_paid + ' . $data2['amount_paid'], FALSE);
-            $this->db->set('due', 'due - ' . $data2['amount_paid'], FALSE);
+            $this->db->set('balance', 'balance - ' . $data2['amount_paid'], FALSE);
             $this->db->update('invoice');
 
             $this->session->set_flashdata('flash_message' , get_phrase('payment_successfull'));
