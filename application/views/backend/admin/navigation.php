@@ -220,7 +220,8 @@
                 $page_name == 'expense' ||
                     $page_name == 'expense_category' ||
                         $page_name == 'student_payment'||
-						$page_name == 'budget')
+						$page_name == 'budget'||
+						$page_name == 'cash_book')
                             echo 'opened active';
         ?> ">
             <a href="#">
@@ -244,22 +245,17 @@
                         <span><i class="entypo-dot"></i> <?php echo get_phrase('student_payments'); ?></span>
                     </a>
                 </li>
-                 
-                <!--<li class="<?php if ($page_name == 'income_category') echo 'active'; ?> ">
-                    <a href="<?php echo base_url(); ?>index.php?admin/income_category">
-                        <span><i class="entypo-dot"></i> <?php echo get_phrase('income_category'); ?></span>
-                    </a>
-                </li>  -->              
+             
                 <li class="<?php if ($page_name == 'expense') echo 'active'; ?> ">
                     <a href="<?php echo base_url(); ?>index.php?admin/expense">
+                        <span><i class="entypo-dot"></i> <?php echo get_phrase('school_expenses'); ?></span>
+                    </a>
+                </li>
+                <li class="<?php if ($page_name == 'cash_book') echo 'active'; ?> ">
+                    <a href="<?php echo base_url(); ?>index.php?admin/cash_book">
                         <span><i class="entypo-dot"></i> <?php echo get_phrase('cash_book'); ?></span>
                     </a>
                 </li>
-                <!--<li class="<?php if ($page_name == 'expense_category') echo 'active'; ?> ">
-                    <a href="<?php echo base_url(); ?>index.php?admin/expense_category">
-                        <span><i class="entypo-dot"></i> <?php echo get_phrase('expense_category'); ?></span>
-                    </a>
-                </li>-->
                 <li class="<?php if ($page_name == 'budget') echo 'active'; ?> ">
                     <a href="<?php echo base_url(); ?>index.php?admin/budget">
                         <span><i class="entypo-dot"></i> <?php echo get_phrase('budget'); ?></span>

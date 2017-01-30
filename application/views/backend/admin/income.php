@@ -1,16 +1,28 @@
+<?php
+	$this->db->where('status' , 'unpaid');
+    $this->db->order_by('creation_timestamp' , 'desc');
+    $unpaid_invoices = $this->db->get('invoice')->result_array();
+	
+	
+	$this->db->where('status' , 'paid');
+    $this->db->order_by('creation_timestamp' , 'desc');
+    $paid_invoices = $this->db->get('invoice')->result_array();
+?>
 <div class="row">
 	<div class="col-md-12">
 			
 			<ul class="nav nav-tabs bordered">
 				<li class="active">
 					<a href="#unpaid" data-toggle="tab">
-						<span class="hidden-xs"><?php echo get_phrase('unpaid_invoices');?></span>
+						<span class="hidden-xs"><?php echo get_phrase('unpaid_invoices');?></span> 
+						<span class="badge badge-danger"><?php echo count($unpaid_invoices);?></span>
 					</a>
 				</li>
 				
 				<li class="">
 					<a href="#cleared" data-toggle="tab">
 						<span class="hidden-xs"><?php echo get_phrase('cleared_invoices');?></span>
+						<span class="badge badge-success"><?php echo count($paid_invoices);?></span>
 					</a>
 				</li>
 				
@@ -41,10 +53,8 @@
                     <tbody>
                     	<?php
                     		$count = 1;
-                    		$this->db->where('status' , 'unpaid');
-                    		$this->db->order_by('creation_timestamp' , 'desc');
-                    		$invoices = $this->db->get('invoice')->result_array();
-                    		foreach($invoices as $row):
+                    		
+                    		foreach($unpaid_invoices as $row):
                     	?>
                         <tr>
                         	<td><?php echo $count++;?></td>
@@ -119,10 +129,10 @@
                     <tbody>
                     	<?php
                     		$count = 1;
-                    		$this->db->where('status' , 'paid');
-                    		$this->db->order_by('creation_timestamp' , 'desc');
-                    		$invoices = $this->db->get('invoice')->result_array();
-                    		foreach($invoices as $row3):
+                    		//$this->db->where('status' , 'paid');
+                    		//$this->db->order_by('creation_timestamp' , 'desc');
+                    		//$invoices = $this->db->get('invoice')->result_array();
+                    		foreach($paid_invoices as $row3):
                     	?>
                         <tr>
                         	<td><?php echo $count++;?></td>
@@ -166,8 +176,9 @@
 					    <thead>
 					        <tr>
 					            <th><div>#</div></th>
-					            <th><div><?php echo get_phrase('title');?></div></th>
-					            <th><div><?php echo get_phrase('description');?></div></th>
+					            <th><div><?php echo get_phrase('student');?></div></th>
+					            <th><div><?php echo get_phrase('year');?></div></th>
+					            <th><div><?php echo get_phrase('term');?></div></th>
 					            <th><div><?php echo get_phrase('method');?></div></th>
 					            <th><div><?php echo get_phrase('amount');?></div></th>
 					            <th><div><?php echo get_phrase('date');?></div></th>
@@ -183,9 +194,10 @@
 					        	foreach ($payments as $row):
 					        ?>
 					        <tr>
-					            <td><?php echo $count++;?></td>
+					        	<td><?php echo $count++;?></td>
+					        	<td><?php echo $this->db->get_where('student',array('student_id'=>$row['student_id']))->row()->name;?></td>
 					            <td><?php echo $row['yr'];?></td>
-					            <td><?php echo $row['term'];?></td>
+					            <td><?php echo $this->db->get_where('terms',array('term_number'=>$row['term']))->row()->name;?></td>
 					            <td>
 					            	<?php 
 					            		if ($row['method'] == 1)

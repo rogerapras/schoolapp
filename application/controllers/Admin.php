@@ -898,29 +898,75 @@ class Admin extends CI_Controller
 
 		if($param1==="edit"){
 	
-			$structure_ids = $this->input->post('detail_id');
+			//$structure_ids = $this->input->post('detail_id');
 			$payable_amount = $this->input->post('payable');
+			
+			$sum_invoice = 0;
 			
 			foreach($payable_amount as $key=>$value):
 				
 				//Check structure details id in invoices
 				
 				$details_id_check = $this->db->get_where('invoice_details',array('invoice_id'=>$param2,'detail_id'=>$key))->num_rows();
+				
+				//Get old value
+				$this->db->where(array('invoice_id'=>$param2,'detail_id'=>$key));
+				$old_amount_due = $this->db->get('invoice_details')->row()->amount_due;
+				
+				
+				
 				if($details_id_check>0){
+					
+					//Update details
 					$this->db->where(array('invoice_id'=>$param2,'detail_id'=>$key));
 					
 					$data['amount_due'] = $value;
-					
 					$this->db->update('invoice_details',$data);	
+							
+					//Update invoice
+										
+					$this->db->set('amount_due',$this->input->post('amount_due'),FALSE);
+					$this->db->set('balance','amount_due - '.$this->db->get_where('invoice',array('invoice_id'=>$param2))->row()->amount_paid,FALSE);
+
+					$this->db->where(array('invoice_id'=>$param2));
+					$this->db->update('invoice');	
+					
 				}else{
 					$data['invoice_id'] = $param2;
 					$data['detail_id'] = $key;
 					$data['amount_due'] = $value;
 				
 					$this->db->insert('invoice_details',$data);
+					
+					//Adjust the Invoice header
+					
+					$this->db->set('amount_due',$this->input->post('amount_due'),FALSE);
+					$this->db->set('balance','amount_due - '.$this->db->get_where('invoice',array('invoice_id'=>$param2))->row()->amount_paid,FALSE);
+
+					
+					$this->db->where(array('invoice_id'=>$param2));
+					$this->db->update('invoice');
 				}
 							
+				$sum_invoice +=$value;
+							
 			endforeach;
+			
+			//Get student Class ID, yr and term
+			
+			//$class_id = $this->input->post('class_id');
+			//$yr = $this->input->post('yr');
+			//$term = $this->input->post('term');
+			
+			//$fees_id = $this->db->get_where('fees_structure',array('class_id'=>$class_id,'yr'=>$yr,'term'=>$term))->row()->fees_id;
+			
+			
+			//$this->db->where(array('invoice_id'=>$param2));
+			//$data['amount'] = $this->select_sum('amount')->db->get_where('fees_structure_details',array('fees_id'=>$fees_id))->row()->amount;
+			//$balance = $this->db->get_where('invoice',array('invoice_id'=>$param2))->row()->balance + $value;
+			//$data['amount_due'] = $value;
+			//$this->db->set('balance,balance+'.$value,FALSE);
+			//$this->db->update('invoice');
 
             $this->session->set_flashdata('flash_message' , get_phrase('invoice_editted_successfully'));
             redirect(base_url() . 'index.php?admin/student_payment', 'refresh');			
@@ -1040,8 +1086,17 @@ class Admin extends CI_Controller
         if ($param1 == 'delete') {
             $this->db->where('invoice_id', $param2);
             $this->db->delete('invoice');
+			
+			//Delete Invoice Details
+			$this->db->where('invoice_id', $param2);
+            $this->db->delete('invoice_details');
+			
+			//Delete Payments
+			$this->db->where('invoice_id', $param2);
+            $this->db->delete('payment');
+			
             $this->session->set_flashdata('flash_message' , get_phrase('data_deleted'));
-            redirect(base_url() . 'index.php?admin/invoice', 'refresh');
+            redirect(base_url() . 'index.php?admin/income', 'refresh');
         }
         $page_data['page_name']  = 'invoice';
         $page_data['page_title'] = get_phrase('manage_invoice/payment');
@@ -1068,6 +1123,16 @@ class Admin extends CI_Controller
             redirect('login', 'refresh');
         $page_data['page_name']  = 'student_payment';
         $page_data['page_title'] = get_phrase('create_invoice');
+        $this->load->view('backend/index', $page_data); 
+    }
+	
+	function cash_book($param1="") {
+        if ($this->session->userdata('admin_login') != 1)
+            redirect('login', 'refresh');
+
+
+        $page_data['page_name']  = 'cash_book';
+        $page_data['page_title'] = get_phrase('cash_book');
         $this->load->view('backend/index', $page_data); 
     }
 
@@ -1241,8 +1306,32 @@ class Admin extends CI_Controller
 			$data['fees_id']   =   $this->input->post('fees_id');
 			$data['income_category_id']   =   $this->input->post('income_category_id');
 			$data['amount']   =   $this->input->post('amount');
-						
-            $this->db->insert('fees_structure_details' , $data);
+
+ 			$this->db->insert('fees_structure_details' , $data);
+			
+			//Adjust Existing Invoices -- All student in the same 
+			$structure = $this->db->get_where('fees_structure',array('fees_id'=>$this->input->post('fees_id')))->row();
+			
+			$class_id = $structure->class_id;
+			$yr = $structure->yr;
+			$term = $structure->term;
+			
+			$tot_fees = $this->db->select_sum('amount')->get_where('fees_structure_details',array('fees_id'=>$this->input->post('fees_id')))->row()->amount;
+			
+			//All student affected by the structure
+			
+			$students = $this->db->get_where('student',array('class_id'=>$class_id))->result_object();
+			
+			foreach($students as $inv):
+
+				if($this->db->get_where('invoice',array('student_id'=>$inv->student_id,'yr'=>$yr,'term'=>$term))->num_rows()>0){
+					$this->db->where(array('student_id'=>$inv->student_id,'yr'=>$yr,'term'=>$term));
+					$data2['amount'] = $tot_fees;
+					$this->db->update('invoice',$data2);
+				}
+				
+			endforeach;
+
             $this->session->set_flashdata('flash_message' , get_phrase('data_added_successfully'));
             redirect(base_url() . 'index.php?admin/fees_structure');
         }

@@ -18,64 +18,7 @@ class="btn btn-primary pull-right">
         </tr>
     </thead>
     <tbody>
-        <?php 
-        	$count = 1;
-        	$this->db->where('payment_type' , 'expense');
-        	$this->db->order_by('timestamp' , 'desc');
-        	$expenses = $this->db->get('payment')->result_array();
-        	foreach ($expenses as $row):
-        ?>
-        <tr>
-            <td><?php echo $count++;?></td>
-            <td><?php echo $row['title'];?></td>
-            <td>
-                <?php 
-                    if ($row['expense_category_id'] != 0 || $row['expense_category_id'] != '')
-                        echo $this->db->get_where('expense_category' , array('expense_category_id' => $row['expense_category_id']))->row()->name;
-                ?>
-            </td>
-            <td>
-            	<?php 
-            		if ($row['method'] == 1)
-            			echo get_phrase('cash');
-            		if ($row['method'] == 2)
-            			echo get_phrase('check');
-            		if ($row['method'] == 3)
-            			echo get_phrase('card');
-            	?>
-            </td>
-            <td><?php echo $row['amount'];?></td>
-            <td><?php echo date('d M,Y', $row['timestamp']);?></td>
-            <td>
-                
-                <div class="btn-group">
-                    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
-                        Action <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-default pull-right" role="menu">
-                        
-                        <!-- teacher EDITING LINK -->
-                        <li>
-                        	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/expense_edit/<?php echo $row['payment_id'];?>');">
-                            	<i class="entypo-pencil"></i>
-									<?php echo get_phrase('edit');?>
-                               	</a>
-                        				</li>
-                        <li class="divider"></li>
-                        
-                        <!-- teacher DELETION LINK -->
-                        <li>
-                        	<a href="#" onclick="confirm_modal('<?php echo base_url();?>index.php?admin/expense/delete/<?php echo $row['payment_id'];?>');">
-                            	<i class="entypo-trash"></i>
-									<?php echo get_phrase('delete');?>
-                               	</a>
-                        				</li>
-                    </ul>
-                </div>
-                
-            </td>
-        </tr>
-        <?php endforeach;?>
+       
     </tbody>
 </table>
 
