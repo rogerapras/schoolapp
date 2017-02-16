@@ -35,11 +35,11 @@
 */
 
 // The following values will probably need to be changed.
-$db['default']['dsn'] = 'mysql:host=localhost;dbname=schoolapp';
-$db['default']['hostname'] = "localhost";
-$db['default']['username'] = "root";
-$db['default']['password'] = "";
-$db['default']['database'] = "schoolapp";
+$db['default']['dsn'] = 'mysql:host=%HOSTNAME%;dbname=%DATABASE%';
+$db['default']['hostname'] = "%HOSTNAME%";
+$db['default']['username'] = "%USERNAME%";
+$db['default']['password'] = "%PASSWORD%";
+$db['default']['database'] = "%DATABASE%";
 
 
 // The following values can probably stay the same.

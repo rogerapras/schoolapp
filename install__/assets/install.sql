@@ -55,10 +55,10 @@ CREATE TABLE `settings` (
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 
 INSERT INTO `settings` (`settings_id`, `type`, `description`) VALUES
-(1,	'system_name',	'School Manager'),
-(2,	'system_title',	'School Manager'),
+(1,	'system_name',	'Techsys Template'),
+(2,	'system_title',	'Techsys Template'),
 (3,	'address',	'Kilifi'),
-(4,	'phone',	'+254711808071'),
+(4,	'phone',	'0711808071'),
 (5,	'paypal_email',	'admin@techsys.com'),
 (6,	'currency',	'Kes.'),
 (7,	'system_email',	'admin@techsys.com'),

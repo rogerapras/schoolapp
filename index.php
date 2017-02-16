@@ -290,3 +290,10 @@ switch (ENVIRONMENT)
  * And away we go...
  */
 require_once BASEPATH.'core/CodeIgniter.php';
+
+//$CI	=&	get_instance();
+//$CI->load->database()
+
+//if($CI->load->database())
+	//redirect(base_url() . 'install', 'refresh');
+

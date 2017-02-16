@@ -57,7 +57,8 @@ function &DB($params = '', $query_builder_override = NULL)
 		if ( ! file_exists($file_path = APPPATH.'config/'.ENVIRONMENT.'/database.php')
 			&& ! file_exists($file_path = APPPATH.'config/database.php'))
 		{
-			show_error('The configuration file database.php does not exist.');
+			fopen(APPPATH.'config/database.php', "w");
+			//show_error('The configuration file database.php does not exist.');
 		}
 
 		include($file_path);
@@ -84,7 +85,13 @@ function &DB($params = '', $query_builder_override = NULL)
 
 		if ( ! isset($db) OR count($db) === 0)
 		{
-			show_error('No database connection settings were found in the database config file.');
+			//show_error('No database connection settings were found in the database config file.');
+			if(file_exists(FCPATH.'install')){
+				redirect(base_url() . 'install', 'refresh');
+			}else{
+				show_error('No database connection settings were found in the database config file.');
+			}
+			
 		}
 
 		if ($params !== '')
