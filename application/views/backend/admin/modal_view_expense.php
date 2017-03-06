@@ -1,5 +1,8 @@
 <?php
-$expense = $this->db->get_where('expense',array('expense_id'=>$param2))->row();
+
+$expense_id = $this->db->get_where('expense',array('batch_number'=>$param2))->row()->expense_id;
+
+$expense = $this->db->get_where('expense',array('expense_id'=>$expense_id))->row();
 ?>
 
 <div class="row">

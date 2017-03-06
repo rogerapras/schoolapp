@@ -1,3 +1,7 @@
+<?php
+//echo $this->crud_model->populate_batch_number('2017-03-01');
+?>
+
 <hr>
 <?php echo form_open(base_url() . 'index.php?admin/cash_book/scroll' , array('class' => 'form-horizontal form-groups-bordered validate', 'enctype' => 'multipart/form-data'));?>
 	<div class="form-group">
@@ -78,15 +82,20 @@
 				<td><?=$rows->t_date;?></td>
 				<td><div class="btn btn-success"
 					
-					<?php
-						if($rows->transaction_type==='2'){
-					?>
-						onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_view_expense/<?=$rows->refNo?>');"
-					<?php
-						}
-					?>
+					<?php if($rows->transaction_type==='2' && ($rows->account==='1' || $rows->account==='2')){ ?>
+						onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_view_expense/<?=$rows->batch_number?>');"
+					<?php } ?>
 					
-					><?=get_phrase('view');?></div></td>
+					<?php if($rows->transaction_type==='1' && ($rows->account==='1' || $rows->account==='2')){ ?>
+						onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_view_receipt/<?=$rows->batch_number?>');"
+					<?php } ?>
+					
+					<?php if(($rows->transaction_type==='3' ||$rows->transaction_type==='4')){ ?>
+						onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_view_contra/<?=$rows->batch_number?>');"
+					<?php } ?>
+					
+					
+					><?=$rows->batch_number?></div></td>
 				<td><?=substr($rows->description,0,25);?></td>
 				<td><?=$type[$rows->transaction_type];?></td>
 				

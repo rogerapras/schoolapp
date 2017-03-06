@@ -8,7 +8,8 @@
 					<ul class="nav nav-tabs">					
 						<li  class=""><a href="#new-budget-item" data-toggle="tab"><?=get_phrase('new_budget_item');?></a></li>
 						<!--<li class=""><a href="#budget-summary" data-toggle="tab"><?=get_phrase('budget_summary');?></a></li>-->
-						<li class="active"><a href="#budget-schedules" data-toggle="tab"><?=get_phrase('budget_schedules');?></a></li>												
+						<li class="active"><a href="#budget-schedules" data-toggle="tab"><?=get_phrase('budget_schedules');?></a></li>	
+						<li class=""><a href="#actual-incomes" data-toggle="tab"><?=get_phrase('actual_incomes');?></a></li>											
 					</ul>
 				</div>
 		</div>
@@ -256,6 +257,10 @@
 				<?php
 					endforeach;
 				?>									
+				</div>
+				
+				<div class="tab-pane" id="actual-incomes">
+					
 				</div>
 						
 			</div>

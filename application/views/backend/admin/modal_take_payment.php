@@ -154,7 +154,7 @@ $row = $edit_data[0];
                     <div class="form-group">
 	                    <label class="col-sm-3 control-label"><?php echo get_phrase('date');?></label>
 	                    <div class="col-sm-6">
-	                        <input type="text" class="datepicker form-control" name="timestamp" 
+	                        <input type="text" class="datepicker form-control" data-format="yyyy-mm-dd" name="timestamp" 
 	                            value=""/>
 	                    </div>
 					</div>

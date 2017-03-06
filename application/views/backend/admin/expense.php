@@ -35,14 +35,14 @@ class="btn btn-primary pull-right">
 						                        
 						            <!-- View Bath Link -->
 						            <li>
-						               	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_view_expense/<?=$row->expense_id?>');">
+						               	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_view_expense/<?=$row->batch_number;?>');">
 						                   	<i class="fa fa-eye-slash"></i>
 												<?php echo get_phrase('view');?>
 						               	</a>
 						             </li>
 						             <li class="divider"></li>
 						                        
-						             <!--Edit Batch Link -->
+						             <!--Reverse Batch Link -->
 						             <li>
 						                 <a href="#" onclick="confirm_action('<?php echo base_url();?>index.php?admin/expense/reverse/<?=$row->expense_id?>');">
 						                     <i class="fa fa-refresh"></i>

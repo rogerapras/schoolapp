@@ -1059,6 +1059,7 @@ class Admin extends CI_Controller
 		            $data['student_id']   =   $this->input->post('student_id');
 		            $data['yr']        =   $this->input->post('yr');
 					$data['serial'] = $res+1;
+					$data['batch_number'] = $this->crud_model->populate_batch_number($this->input->post('timestamp'));
 					$data['detail_id']  =   $value->detail_id;
 		            $data['term']  =   $this->input->post('term');
 		            $data['method']       =   $this->input->post('method');
@@ -1071,7 +1072,7 @@ class Admin extends CI_Controller
 			
 			//Enter Income into the Cash Book
 			$data1['t_date'] = date('Y-m-d');
-			$data1['refNo'] = $res+1;
+			$data1['batch_number'] = $this->crud_model->populate_batch_number($this->input->post('timestamp'));
 			$data1['description'] = get_phrase('student_payment').' - '.$this->db->get_where('student',array('student_id'=>$this->input->post('student_id')))->row()->name;
 			$data1['transaction_type'] = '1'; //1 Means Income and 2 means expenses
 			$data1['account'] = $this->input->post('method');
@@ -1171,7 +1172,7 @@ class Admin extends CI_Controller
 		if($param1==='create'){
 			//Enter Income into the Cash Book
 			$data1['t_date'] = date('Y-m-d');
-			$data1['refNo'] = '0';
+			$data1['batch_number'] = $this->crud_model->populate_batch_number(date('Y-m-d'));
 			$data1['description'] = $this->input->post('description');
 			$data1['transaction_type'] = $this->input->post('entry_type');
 			$data1['account'] = 0;
@@ -1205,7 +1206,8 @@ class Admin extends CI_Controller
         if ($this->session->userdata('admin_login') != 1)
             redirect('login', 'refresh');
         if ($param1 == 'create') {
-            $data['payee']        =   $this->input->post('payee');    
+            $data['payee']        =   $this->input->post('payee'); 
+			$data['batch_number']        =   $this->crud_model->populate_batch_number($this->input->post('t_date'));   
 			$data['t_date']        =   $this->input->post('t_date');		
             $data['description']         =   $this->input->post('description');			
             $data['method']              =   $this->input->post('method');				    	
@@ -1236,7 +1238,7 @@ class Admin extends CI_Controller
 			
 			//Enter Income into the Cash Book
 			$data1['t_date'] = date('Y-m-d');
-			$data1['refNo'] = $expense_id;
+			$data1['batch_number'] = $this->crud_model->populate_batch_number($this->input->post('t_date'));
 			$data1['description'] = $this->input->post('description');
 			$data1['transaction_type'] = '2';
 			$data1['account'] = $this->input->post('method');
@@ -1270,11 +1272,14 @@ class Admin extends CI_Controller
         }
 	**/	
 		if($param1==='reverse'){
+					
+			$date = date('Y-m-d');
 			
 			$expense = $this->db->get_where('expense',array('expense_id'=>$param2))->row();
 
             $data['payee']        =   $this->db->get_where('settings',array('type'=>'system_name'))->row()->description;    
-			$data['t_date']        =   date('Y-m-d');		
+			$data['batch_mumber']        =   $this->crud_model->populate_batch_number($date);
+			$data['t_date']        =   date('Y-m-d');			
             $data['description']         =   get_phrase('reversal:_batch').' - '.$expense->batch_number;			
             $data['method']              =   $expense->method;				    	
             $data['amount']              =   -$expense->amount;	
@@ -1300,7 +1305,7 @@ class Admin extends CI_Controller
 			
 			//Enter Income into the Cash Book
 			$data1['t_date'] = date('Y-m-d');
-			$data1['refNo'] = $expense_id;
+			$data1['batch_number'] = $this->crud_model->populate_batch_number(date('Y-m-d'));
 			$data1['description'] = get_phrase('reversal:_batch').' - '.$expense->batch_number;
 			$data1['transaction_type'] = '2';
 			$data1['account'] = $expense->method;

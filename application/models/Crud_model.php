@@ -414,4 +414,32 @@ class Crud_model extends CI_Model {
 		
 		return array('cash_balance'=>$cash_balance,'bank_balance'=>$bank_balance);
 	}
+
+	function populate_batch_number($cur_date){
+		//Check if Cashbook has any record
+		$cashbook_records = $this->db->get('cashbook')->num_rows();
+		
+		$batch_number = date('y',strtotime($cur_date)).date('m',strtotime($cur_date));
+		
+		if($cashbook_records===0){
+			$batch_number .='01';
+		}else{
+			$last_batch_number = $this->db->select_max('batch_number')->get('cashbook')->row()->batch_number;
+			$batch_serial = substr($last_batch_number, 4);
+			$nxt_batch_serial = $batch_serial+1;
+			
+			$next_batch_serial = '';
+			
+			if($nxt_batch_serial<10) {
+				$next_batch_serial .='0'.$nxt_batch_serial;
+			}else{
+				$next_batch_serial=$nxt_batch_serial;
+			}
+			
+			$batch_number .=$next_batch_serial;
+		}
+		
+		return $batch_number;
+	}
+
 }
