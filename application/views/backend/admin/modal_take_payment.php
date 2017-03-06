@@ -146,7 +146,7 @@ $row = $edit_data[0];
                             <select name="method" class="form-control">
                                 <option value="1"><?php echo get_phrase('cash');?></option>
                                 <option value="2"><?php echo get_phrase('check');?></option>
-                                <option value="3"><?php echo get_phrase('card');?></option>
+                                <!--<option value="3"><?php echo get_phrase('card');?></option>-->
                             </select>
                         </div>
                     </div>

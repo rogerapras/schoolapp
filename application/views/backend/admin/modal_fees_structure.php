@@ -27,6 +27,7 @@ $structure_details = $this->db->get_where('fees_structure_details', array('fees_
     <tbody>
         <?php 
         	//$fees = $this->db->get_where('fees_structure_details',array("fees_id"=>$param2))->result_array();
+        	$sum =0;
         	foreach ($structure_details as $row):
         ?>
         <tr>
@@ -58,10 +59,15 @@ $structure_details = $this->db->get_where('fees_structure_details', array('fees_
                 </div>
         	</td>
             <td><?php echo $row['name'];?></td>
-            <td><?php echo $row['amount'];?></td>
+            <td><?php echo number_format($row['amount'],2);?></td>
 
         </tr>
-        <?php endforeach;?>
+        <?php 
+        
+        	$sum+=$row['amount'];
+        	endforeach;
+        ?>
+        <tr><td colspan="2"><?=get_phrase('total');?></td><td><?=number_format($sum,2);?></td></tr>
     </tbody>
 </table>
 

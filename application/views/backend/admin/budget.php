@@ -25,7 +25,7 @@
 									<label class="control-label col-sm-4"><?=get_phrase('account_');?></label>
 									<div class="col-sm-7">
 										<select name="expense_category_id" id="expense_category_id" class="form-control"  required="required">
-											<option><?=get_phrase('select');?></option>
+											<option selected disabled value=""><?=get_phrase('select');?></option>
 											<?php
 												$exp_acc = $this->db->get('expense_category')->result();
 												
@@ -50,7 +50,7 @@
 									<label class="control-label col-sm-4"><?=get_phrase('financial_year');?></label>
 									<div class="col-sm-7">
 										<select name="fy" id="fy" class="form-control"  required="required">
-											<option><?=get_phrase('select');?></option>
+											<option disabled selected value=""><?=get_phrase('select');?></option>
 											<?php 
 												$fy = range(date('Y')-5, date('Y')+5);
 													
@@ -344,41 +344,6 @@
 $('#frm_schedule').submit(function(ev){	
 			$('#error_msg').html();
 			
-			if($('#expense_category_id').val().length===0){
-				$('#error_msg').html('<?php echo get_phrase('error:_account_missing');?>');
-				ev.preventDefault();
-			}
-			
-			if($('#description').val().length===0){
-				$('#error_msg').html('<?php echo get_phrase('error:_description_missing');?>');
-				ev.preventDefault();
-			}		
-			
-			if($('#fy').val().length===0){
-				$('#error_msg').html('<?php echo get_phrase('error:_financial_year_missing');?>');
-				ev.preventDefault();
-			}
-			
-			if($('#qty').val().length===0){
-				$('#error_msg').html('<?php echo get_phrase('error:_quantity_missing');?>');
-				ev.preventDefault();
-			}
-			
-			if($('#unitCost').val().length===0){
-				$('#error_msg').html('<?php echo get_phrase('error:_unit_cost_missing');?>');
-				ev.preventDefault();
-			}
-			
-			if($('#often').val().length===0){
-				$('#error_msg').html('<?php echo get_phrase('error:_frequency_missing');?>');
-				ev.preventDefault();
-			}
-			
-			if($('#totalCost').val().length===0){
-				$('#error_msg').html('<?php echo get_phrase('error:_total_cost_missing');?>');
-				ev.preventDefault();
-			}
-			
 			var cnt = 0;
 			
 			$('.spread').each(function(index){
@@ -392,6 +357,8 @@ $('#frm_schedule').submit(function(ev){
 			if(cnt>0){
 				$('#error_msg').html('<?php echo get_phrase('error:_spread_missing');?>');
 				ev.preventDefault();
+			}else{
+				$('#error_msg').html();	
 			}
 			
 			var spread = 0;
@@ -399,13 +366,16 @@ $('#frm_schedule').submit(function(ev){
 				spread += +$(this).val();
 			});
 			
-			var total = $('#totalCost').val();
+			var total = $('#total').val();
 			
+			//alert(Math.ceil(total));
 			//alert(Math.ceil(spread));
 			
 			if(Math.ceil(spread)!==Math.ceil(total)){
 				$('#error_msg').html('<?php echo get_phrase('error:_spread_incorrect');?>');
 				ev.preventDefault();
+			}else{
+				$('#error_msg').html();
 			}
 			
 			

@@ -13,6 +13,7 @@
 							echo form_open(base_url() . 'index.php?admin/budget/edit_item/'.$param2 , array('id'=>'frm_schedule','class' => 'form-horizontal form-groups-bordered validate', 'enctype' => 'multipart/form-data'));
 							
 							$budget = $this->db->get_where('budget',array('budget_id'=>$param2))->row();
+							//print_r($budget);
 						?>
 
 							<div class="row">
@@ -20,7 +21,7 @@
 									<label class="control-label col-sm-4"><?=get_phrase('account');?></label>
 									<div class="col-sm-7">
 										<select name="expense_category_id" id="expense_category_id" class="form-control"  required="required">
-											<option><?=get_phrase('select');?></option>
+											<option selected disabled value=""><?=get_phrase('select');?></option>
 											<?php
 												$exp_acc = $this->db->get('expense_category')->result();
 												
@@ -45,7 +46,7 @@
 									<label class="control-label col-sm-4"><?=get_phrase('financial_year');?></label>
 									<div class="col-sm-7">
 										<select name="fy" id="fy" class="form-control" required="required">
-											<option><?=get_phrase('select');?></option>
+											<option selected disabled value=""><?=get_phrase('select');?></option>
 											<?php 
 												$fy = range(date('Y')-5, date('Y')+5);
 													

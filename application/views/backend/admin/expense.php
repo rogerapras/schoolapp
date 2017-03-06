@@ -8,17 +8,55 @@ class="btn btn-primary pull-right">
 <table class="table table-bordered datatable" id="table_export">
     <thead>
         <tr>
-            <th><div>#</div></th>
+            <th><div><?php echo get_phrase('date');?></div></th>
+            <th><div><?php echo get_phrase('batch_number');?></div></th>
             <th><div><?php echo get_phrase('title');?></div></th>
-            <th><div><?php echo get_phrase('category');?></div></th>
             <th><div><?php echo get_phrase('method');?></div></th>
             <th><div><?php echo get_phrase('amount');?></div></th>
-            <th><div><?php echo get_phrase('date');?></div></th>
             <th><div><?php echo get_phrase('options');?></div></th>
         </tr>
     </thead>
     <tbody>
+		<?php
+			foreach($expenses as $row):
+		?>
+       		<tr>
+       			<td><?=$row->t_date;?></td>
+       			<td><?=$row->batch_number;?></td>
+       			<td><?=$row->description;?></td>
+       			<td><?=$this->db->get_where('accounts',array('accounts_id'=>$row->method))->row()->name;?></td>
+       			<td><?=$row->amount;?></td>
+       			<td>
+       				<div class="btn-group">
+						 <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+						        Action <span class="caret"></span>
+						 </button>
+						       <ul class="dropdown-menu dropdown-default pull-right" role="menu">
+						                        
+						            <!-- View Bath Link -->
+						            <li>
+						               	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_view_expense/<?=$row->expense_id?>');">
+						                   	<i class="fa fa-eye-slash"></i>
+												<?php echo get_phrase('view');?>
+						               	</a>
+						             </li>
+						             <li class="divider"></li>
+						                        
+						             <!--Edit Batch Link -->
+						             <li>
+						                 <a href="#" onclick="confirm_action('<?php echo base_url();?>index.php?admin/expense/reverse/<?=$row->expense_id?>');">
+						                     <i class="fa fa-refresh"></i>
+												<?php echo get_phrase('reverse');?>
+						                  </a>
+						             </li>
+						        </ul>
+						</div>
+       			</td>
+       		</tr>
        
+       <?php
+		endforeach;
+		?>
     </tbody>
 </table>
 

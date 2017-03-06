@@ -1048,8 +1048,13 @@ class Admin extends CI_Controller
 			
 			$take_payment = $this->input->post('take_payment');
 			
+			$amt = 0;
+			
 			foreach($invoice_details as $key=>$value){
 				if($take_payment[$key]!=='0'){
+					
+					$amt += $take_payment[$key];
+					
 					$data['invoice_id']   =   $this->input->post('invoice_id');
 		            $data['student_id']   =   $this->input->post('student_id');
 		            $data['yr']        =   $this->input->post('yr');
@@ -1063,7 +1068,17 @@ class Admin extends CI_Controller
 		          }	
 			}
 			
-            
+			
+			//Enter Income into the Cash Book
+			$data1['t_date'] = date('Y-m-d');
+			$data1['refNo'] = $res+1;
+			$data1['description'] = get_phrase('student_payment').' - '.$this->db->get_where('student',array('student_id'=>$this->input->post('student_id')))->row()->name;
+			$data1['transaction_type'] = '1'; //1 Means Income and 2 means expenses
+			$data1['account'] = $this->input->post('method');
+			$data1['amount'] = $amt;
+            $this->db->insert('cashbook' , $data1);
+			
+			
 
             $data2['amount_paid']   =   $this->input->post('total_payment');
             $this->db->where('invoice_id' , $param2);
@@ -1129,30 +1144,110 @@ class Admin extends CI_Controller
 	function cash_book($param1="") {
         if ($this->session->userdata('admin_login') != 1)
             redirect('login', 'refresh');
+		
+		$t_date = date('Y-m-d');
+		
+		if($param1==="scroll") $t_date = $this->input->post('t_date'); 
+		
+		if($param1==="") $t_date = date('Y-m-01');
+			
+		$month = date('m',strtotime($t_date));
+		$year = date('Y',strtotime($t_date));
+		
+		$opening_balance = $this->crud_model->opening_account_balance($t_date);
+		
 
-
+		$page_data['cash_balance'] = $opening_balance['cash_balance'];
+		$page_data['bank_balance'] = $opening_balance['bank_balance'];
         $page_data['page_name']  = 'cash_book';
         $page_data['page_title'] = get_phrase('cash_book');
+		$page_data['current'] = $t_date;
+		$page_data['transactions'] = $this->db->get_where('cashbook',array('Month(t_date)'=>$month,'Year(t_date)'=>$year))->result_object();
         $this->load->view('backend/index', $page_data); 
     }
+	
+	function contra_entry($param1="",$param2=""){
+		
+		if($param1==='create'){
+			//Enter Income into the Cash Book
+			$data1['t_date'] = date('Y-m-d');
+			$data1['refNo'] = '0';
+			$data1['description'] = $this->input->post('description');
+			$data1['transaction_type'] = $this->input->post('entry_type');
+			$data1['account'] = 0;
+			$data1['amount'] = $this->input->post('amount');
+            $this->db->insert('cashbook' , $data1);
+
+            $this->session->set_flashdata('flash_message' , get_phrase('data_added_successfully'));
+            redirect(base_url() . 'index.php?admin/cash_book/'.$param2, 'refresh');			
+		}
+		
+		
+		//$this->cash_book($param2);
+	}
+
+	function opening_balances($param1="",$param2=""){
+			
+			$this->db->where(array('name'=>'cash'));
+			$data['opening_balance'] = $this->input->post('cash');
+			$this->db->update('accounts' , $data);
+			
+			$this->db->where(array('name'=>'bank'));
+			$data1['opening_balance'] = $this->input->post('bank');
+            $this->db->update('accounts' , $data1);
+
+            $this->session->set_flashdata('flash_message' , get_phrase('data_added_successfully'));
+            redirect(base_url() . 'index.php?admin/school_settings/', 'refresh');				
+	}
 
     function expense($param1 = '' , $param2 = '')
     {
         if ($this->session->userdata('admin_login') != 1)
             redirect('login', 'refresh');
         if ($param1 == 'create') {
-            $data['title']               =   $this->input->post('title');
-            $data['expense_category_id'] =   $this->input->post('expense_category_id');
-            $data['description']         =   $this->input->post('description');
-            $data['payment_type']        =   'expense';
-            $data['method']              =   $this->input->post('method');
+            $data['payee']        =   $this->input->post('payee');    
+			$data['t_date']        =   $this->input->post('t_date');		
+            $data['description']         =   $this->input->post('description');			
+            $data['method']              =   $this->input->post('method');				    	
             $data['amount']              =   $this->input->post('amount');
             $data['timestamp']           =   strtotime($this->input->post('timestamp'));
-            $this->db->insert('payment' , $data);
+            $this->db->insert('expense' , $data);
+			
+			$expense_id = $this->db->insert_id();
+			
+			$qty = $this->input->post('qty');
+			$desc = $this->input->post('desc');
+			$unitcost = $this->input->post('unitcost');
+			$cost = $this->input->post('cost');
+			$category = $this->input->post('category');
+			
+			foreach($qty as $key=>$val):
+				$data2['expense_id'] = $expense_id;
+				$data2['qty'] = $qty[$key];
+				$data2['description'] = $desc[$key];
+				$data2['unitcost'] = $unitcost[$key];
+				$data2['cost'] = $cost[$key];
+				$data2['expense_category_id'] = $category[$key];
+				
+				$this->db->insert('expense_details' , $data2);
+				
+			endforeach;
+			
+			
+			//Enter Income into the Cash Book
+			$data1['t_date'] = date('Y-m-d');
+			$data1['refNo'] = $expense_id;
+			$data1['description'] = $this->input->post('description');
+			$data1['transaction_type'] = '2';
+			$data1['account'] = $this->input->post('method');
+			$data1['amount'] = $this->input->post('amount');;
+            $this->db->insert('cashbook' , $data1);
+			
+			
             $this->session->set_flashdata('flash_message' , get_phrase('data_added_successfully'));
             redirect(base_url() . 'index.php?admin/expense', 'refresh');
         }
-
+	/**
         if ($param1 == 'edit') {
             $data['title']               =   $this->input->post('title');
             $data['expense_category_id'] =   $this->input->post('expense_category_id');
@@ -1173,8 +1268,52 @@ class Admin extends CI_Controller
             $this->session->set_flashdata('flash_message' , get_phrase('data_deleted'));
             redirect(base_url() . 'index.php?admin/expense', 'refresh');
         }
+	**/	
+		if($param1==='reverse'){
+			
+			$expense = $this->db->get_where('expense',array('expense_id'=>$param2))->row();
+
+            $data['payee']        =   $this->db->get_where('settings',array('type'=>'system_name'))->row()->description;    
+			$data['t_date']        =   date('Y-m-d');		
+            $data['description']         =   get_phrase('reversal:_batch').' - '.$expense->batch_number;			
+            $data['method']              =   $expense->method;				    	
+            $data['amount']              =   -$expense->amount;	
+            $data['timestamp']           =   strtotime(date('Y-m-d'));
+            $this->db->insert('expense' , $data);
+			
+			$expense_id = $this->db->insert_id();
+			
+			$details = $this->db->get_where('expense_details',array('expense_id'=>$param2))->result_object();
+			
+			foreach($details as $row):
+				$data2['expense_id'] = $expense_id;
+				$data2['qty'] = $row->qty;
+				$data2['description'] = $row->description;
+				$data2['unitcost'] = -$row->unitcost;
+				$data2['cost'] = -$row->cost;
+				$data2['expense_category_id'] = $row->expense_category_id;
+				
+				$this->db->insert('expense_details' , $data2);
+				
+			endforeach;
+			
+			
+			//Enter Income into the Cash Book
+			$data1['t_date'] = date('Y-m-d');
+			$data1['refNo'] = $expense_id;
+			$data1['description'] = get_phrase('reversal:_batch').' - '.$expense->batch_number;
+			$data1['transaction_type'] = '2';
+			$data1['account'] = $expense->method;
+			$data1['amount'] = -$expense->amount;
+            $this->db->insert('cashbook' , $data1);
+			
+			
+            $this->session->set_flashdata('flash_message' , get_phrase('record_reversed_successful'));
+            redirect(base_url() . 'index.php?admin/expense', 'refresh');
+		}
 
         $page_data['page_name']  = 'expense';
+		$page_data['expenses'] = $this->db->get('expense')->result_object();
         $page_data['page_title'] = get_phrase('expenses');
         $this->load->view('backend/index', $page_data); 
     }
@@ -1185,9 +1324,10 @@ class Admin extends CI_Controller
             redirect('login', 'refresh');
         if ($param1 == 'create') {
             $data['name']   =   $this->input->post('name');
+			$data['income_category_id']   =   $this->input->post('income_category_id');
             $this->db->insert('expense_category' , $data);
             $this->session->set_flashdata('flash_message' , get_phrase('data_added_successfully'));
-            redirect(base_url() . 'index.php?admin/expense_category');
+            redirect(base_url() . 'index.php?admin/school_settings');
         }
         if ($param1 == 'edit') {
             $data['name']   =   $this->input->post('name');
@@ -1195,17 +1335,17 @@ class Admin extends CI_Controller
             $this->db->where('expense_category_id' , $param2);
             $this->db->update('expense_category' , $data);
             $this->session->set_flashdata('flash_message' , get_phrase('data_updated'));
-            redirect(base_url() . 'index.php?admin/expense_category');
+            redirect(base_url() . 'index.php?admin/school_settings');
         }
         if ($param1 == 'delete') {
             $this->db->where('expense_category_id' , $param2);
             $this->db->delete('expense_category');
             $this->session->set_flashdata('flash_message' , get_phrase('data_deleted'));
-            redirect(base_url() . 'index.php?admin/expense_category');
+            redirect(base_url() . 'index.php?admin/school_settings');
         }
 
-        $page_data['page_name']  = 'expense_category';
-        $page_data['page_title'] = get_phrase('expense_category');
+        $page_data['page_name']  = 'school_settings';
+        $page_data['page_title'] = get_phrase('school_settings');
         $this->load->view('backend/index', $page_data);
     }
 	function income_category($param1 = '' , $param2 = ''){
@@ -1246,8 +1386,18 @@ class Admin extends CI_Controller
 			$data['yr']   =   $this->input->post('yr');
 			$data['term']   =   $this->input->post('term');
 			
-            $this->db->insert('fees_structure' , $data);
-            $this->session->set_flashdata('flash_message' , get_phrase('data_added_successfully'));
+			//Check if the Fees structure Exists
+			
+			$chk = $this->db->get_where('fees_structure',array('name'=>$this->input->post('name')))->num_rows();
+			
+			if($chk===0){
+				$this->db->insert('fees_structure' , $data);
+            	$this->session->set_flashdata('flash_message' , get_phrase('data_added_successfully'));	
+			}else{
+				$this->session->set_flashdata('flash_message' , get_phrase('record_already_exists'));
+			}
+			
+            
             redirect(base_url() . 'index.php?admin/fees_structure');
         }
         if ($param1 == 'edit') {

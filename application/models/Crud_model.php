@@ -358,4 +358,60 @@ class Crud_model extends CI_Model {
         }
         return $unread_message_counter;
     }
+	
+	//Accounting
+	
+	function opening_account_balance($curr_date){
+		
+		$start_date = $this->db->get_where('settings',array('type'=>'system_start_date'))->row()->description;
+		
+		$opening_bank_balance = $this->db->get_where('accounts',array('name'=>'bank'))->row()->opening_balance;
+		
+		$opening_cash_balance = $this->db->get_where('accounts',array('name'=>'cash'))->row()->opening_balance;
+		
+		$bank_balance = 0;
+		
+		$cash_balance = 0;
+		
+		if(strtotime(date('Y-m-01',strtotime($start_date)))===strtotime(date('Y-m-01',strtotime($curr_date)))){
+			
+				$bank_balance = $this->db->get_where('accounts',array('name'=>'bank'))->row()->opening_balance;
+		
+				$cash_balance = $this->db->get_where('accounts',array('name'=>'cash'))->row()->opening_balance;
+		
+		}elseif(strtotime(date('Y-m-01',strtotime($start_date)))<strtotime(date('Y-m-01',strtotime($curr_date)))){
+			
+				$c_date = date('Y-m-01',strtotime($curr_date));
+				
+				//Sum all Bank Income and expenses in previous months before the supplied month and get their difference
+				
+				$month = date('m',strtotime($c_date));
+				$year = date('Y',strtotime($c_date));
+				
+				$bank_income_cond = " ((transaction_type='1' AND account='2') OR transaction_type='3') AND t_date<'".$c_date."'";// AND t_date<='".$c_date."'
+				
+				$bank_income = $this->db->select_sum('amount')->where($bank_income_cond)->get('cashbook')->row()->amount;
+				
+				$bank_expense_cond = " ((transaction_type='2' AND account='2') OR transaction_type='4') AND t_date<'".$c_date."'";
+				
+				$bank_expense = $this->db->select_sum('amount')->where($bank_expense_cond)->get('cashbook')->row()->amount;
+				
+				$bank_balance = ($opening_bank_balance+$bank_income)-$bank_expense;
+				
+				//Sum all Cash Income and expenses in previous months before the supplied months and get their difference
+				
+				$cash_income_cond = " ((transaction_type='1' AND account='1') OR transaction_type='4') AND t_date<'".$c_date."'";
+				
+				$cash_income = $this->db->select_sum('amount')->where($cash_income_cond)->get('cashbook')->row()->amount;
+				
+				$cash_expense_cond = " ((transaction_type='2' AND account='1') OR transaction_type='3') AND t_date<'".$c_date."'";
+				
+				$cash_expense = $this->db->select_sum('amount')->where($cash_expense_cond)->get('cashbook')->row()->amount;
+				
+				$cash_balance = ($opening_cash_balance+$cash_income)-$cash_expense;
+		}
+		//Return the Cash and Bank Balances
+		
+		return array('cash_balance'=>$cash_balance,'bank_balance'=>$bank_balance);
+	}
 }

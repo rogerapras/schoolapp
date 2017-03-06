@@ -12,6 +12,7 @@ class="btn btn-primary pull-right">
             <th><div><?php echo get_phrase('class');?></div></th>
             <th><div><?php echo get_phrase('year');?></div></th>
             <th><div><?php echo get_phrase('term');?></div></th>
+            <th><div><?php echo get_phrase('amount_payable');?></div></th>
             <th><div><?php echo get_phrase('options');?></div></th>
         </tr>
     </thead>
@@ -26,6 +27,7 @@ class="btn btn-primary pull-right">
             <td><?php echo $this->crud_model->get_class_name($row['class_id']);?></td>
             <td><?php echo $row['yr'];?></td>
             <td><?php echo $this->db->get_where('terms',array('term_number'=>$row['term']))->row()->name;?></td>
+            <td><?=number_format($this->db->select_sum('amount')->get_where('fees_structure_details',array('fees_id'=>$row['fees_id']))->row()->amount,2);?></td>
             <td>
                 
                 <div class="btn-group">
@@ -47,7 +49,7 @@ class="btn btn-primary pull-right">
                          <li>
                         	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_fees_structure_details/<?php echo $row['fees_id'];?>');">
                             	<i class="entypo-book-open"></i>
-									<?php echo get_phrase('add_fees_structure');?>
+									<?php echo get_phrase('add_item');?>
                                	</a>
                         </li>
                         <li class="divider"></li>

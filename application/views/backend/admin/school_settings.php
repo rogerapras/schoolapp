@@ -65,6 +65,47 @@
 		</div>
 	</div>
 	
+	<div class="col-xs-6">
+		
+				<div class="panel panel-primary">
+								
+					<div class="panel-heading">
+						<div class="panel-title"><?=get_phrase('account_opening_balances');?></div>						
+					</div>
+										
+					<div class="panel-body">
+						<div class="btn btn-primary btn-icon pull-right" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_add_edit_account/');"><i class="fa fa-plus-square"></i><?=get_phrase('add/_Edit');?></div>
+						<table class="table table-bordered">
+							<thead>
+								<tr>
+									<th><?=get_phrase('date');?></th>
+									<th><?=get_phrase('account');?></th>
+									<th><?=get_phrase('amount');?></th>
+								</tr>
+							</thead>
+							<?php
+								$balances = $this->db->get('accounts')->result_object();
+							?>
+							<tbody>
+								<tr>
+									<td><?php echo $this->db->get_where('settings',array('type'=>'system_start_date'))->row()->description;?></td>
+									<td><?=get_phrase('bank');?></td>
+									<td><?php echo number_format($balances[1]->opening_balance,2);?></td>
+								</tr>
+								<tr>
+									<td><?php echo $this->db->get_where('settings',array('type'=>'system_start_date'))->row()->description;?></td>
+									<td><?=get_phrase('cash');?></td>
+									<td><?php echo number_format($balances[0]->opening_balance,2);?></td>
+								</tr>
+							</tbody>
+						</table>
+						
+					</div>
+				
+				</div>
+		
+	</div>
+	
 </div>
 
 <div class="row">

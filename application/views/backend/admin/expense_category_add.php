@@ -20,6 +20,28 @@
 					</div>
                     
                     <div class="form-group">
+						<label for="field-1" class="col-sm-3 control-label"><?php echo get_phrase('income_category');?></label>
+						
+						<div class="col-sm-6">
+							<select name="income_category_id" class="form-control select2">
+                              <option value=""><?php echo get_phrase('select');?></option>
+                              <?php 
+								$income_categories = $this->db->get('income_categories')->result_array();
+								foreach($income_categories as $row):
+									?>
+                            		<option value="<?php echo $row['income_category_id'];?>">
+										<?php echo $row['name'];?>
+                                    </option>
+                                <?php
+								endforeach;
+							  ?>
+                          </select>
+						</div>
+						
+					</div>
+                    
+                    
+                    <div class="form-group">
 						<div class="col-sm-offset-3 col-sm-5">
 							<button type="submit" class="btn btn-info"><?php echo get_phrase('add_expense_category');?></button>
 						</div>
