@@ -1322,7 +1322,52 @@ class Admin extends CI_Controller
         $page_data['page_title'] = get_phrase('expenses');
         $this->load->view('backend/index', $page_data); 
     }
+	
+	function download_receipt($param1=""){
+		$data = array();
+        //load the view and saved it into $html variable
+        $data['batch_number'] = $param1;
+        $html=$this->load->view('backend/download_receipt', $data, true);
+		 
+        //this the the PDF filename that user will get to download
+        $pdfFilePath = $docName = "Receipt-".$param1."-".date('Y-m-d h:s').".pdf";
+ 		
+		  
+		 /**
+        //load mPDF library
+        $this->load->library('m_pdf');
+ 
+       //generate the PDF from the given html
+        $this->m_pdf->pdf->WriteHTML($html);
+ 
+        //download it.
+        $this->m_pdf->pdf->Output($pdfFilePath, "D");
+		**/		
+		   	
+		
+	
+		
+		//Load the library
+	    $this->load->library('html2pdf');
+	    
+	    //Set folder to save PDF to
+	    $this->html2pdf->folder('./assets/pdfs/');
+	    
+	    //Set the filename to save/download as
+	    $this->html2pdf->filename($docName);
+	    
+	    //Set the paper defaults
+	    $this->html2pdf->paper('a6', 'portrait');
+	    
+	    //Load html view
+	    $this->html2pdf->html($html);
+	    //$this->html2pdf->html('<h1>Some Title</h1><p>Some content in here</p>');
+		
+		$this->html2pdf->create('download');
+		 
 
+	}
+	
     function expense_category($param1 = '' , $param2 = '')
     {
         if ($this->session->userdata('admin_login') != 1)

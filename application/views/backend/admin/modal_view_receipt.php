@@ -1,6 +1,5 @@
 <?php
-
-//echo str_replace("\\", "/", FCPATH);
+//print_r($this->db->get_where('payment',array('batch_number'=>$param2))->result_object());
 
 $receipt = $this->db->get_where('payment',array('batch_number'=>$param2))->result_object();
 
@@ -8,7 +7,7 @@ $receipt = $this->db->get_where('payment',array('batch_number'=>$param2))->resul
 <div class="row">
 	<center>
 	    <a onClick="PrintElem('#receipt_print')" class="btn btn-default btn-icon icon-left hidden-print pull-right">
-	        Print Invoice
+	        <?=get_phrase('print_receipt');?>
 	        <i class="entypo-print"></i>
 	    </a>
 	</center>
@@ -52,7 +51,7 @@ $receipt = $this->db->get_where('payment',array('batch_number'=>$param2))->resul
 						</div>
 					</div>
 				
-				<table class="table table-bordered">
+				<table class="table table-bordered datatables">
 					<thead>
 						<tr>
 							<th><?=get_phrase('description');?></th>
@@ -141,10 +140,8 @@ $receipt = $this->db->get_where('payment',array('batch_number'=>$param2))->resul
     {
         var mywindow = window.open('', 'Receipt', 'height=400,width=600');
         mywindow.document.write('<html><head><title>Receipt</title>');
-        
-        mywindow.document.write('<link rel="stylesheet" href="<?php echo str_replace("\\", "/", FCPATH);?>assets/css/bootstrap.css" type="text/css" />');
-        mywindow.document.write('<link rel="stylesheet" href="<?php echo str_replace("\\", "/", FCPATH);?>assets/css/neon-theme.css" type="text/css" />');
-        
+        mywindow.document.write('<link rel="stylesheet" href="<?php echo FCPATH;?>assets/css/neon-theme.css" type="text/css" />');
+        mywindow.document.write('<link rel="stylesheet" href="<?php echo FCPATH;?>assets/js/datatables/responsive/css/datatables.responsive.css" type="text/css" />');
         mywindow.document.write('</head><body >');
         mywindow.document.write(data);
         mywindow.document.write('</body></html>');

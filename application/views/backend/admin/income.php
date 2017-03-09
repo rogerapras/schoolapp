@@ -214,12 +214,33 @@
 					            </td>
 					            <td><?php echo $row['amount'];?></td>
 					            <td><?php echo date('d M,Y', $row['timestamp']);?></td>
-					            <td align="center">
-					            	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_view_receipt/<?php echo $row['batch_number'];?>');"
-					            		class="btn btn-default">
-					            			<?php echo get_phrase('view_receipt');?>
-					            	</a>
-					            </td>
+					            <td>
+					            	
+					            	<div class="btn-group">
+									 <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown">
+									        Action <span class="caret"></span>
+									 </button>
+									       <ul class="dropdown-menu dropdown-default pull-right" role="menu">
+									                        
+									            <!-- View Receipt -->
+									            <li>
+									               	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_view_receipt/<?php echo $row['batch_number'];?>');">
+									                   	<i class="fa fa-eye-slash"></i>
+															<?php echo get_phrase('view_receipt');?>
+									               	</a>
+									             </li>
+									             <li class="divider"></li>
+									                        
+									             <!--Download Receipt -->
+									             <li>
+									                 <a href="<?=base_url();?>index.php?admin/download_receipt/<?php echo $row['batch_number'];?>" >
+									                     <i class="fa fa-download"></i>
+															<?php echo get_phrase('download_receipt');?>
+									                  </a>
+									             </li>
+									        </ul>
+									</div>
+					            
 					        </tr>
 					        <?php endforeach;?>
 					    </tbody>
