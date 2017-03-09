@@ -190,7 +190,9 @@
 					        	$count = 1;
 					        	//$this->db->where('payment_type' , 'income');
 					        	$this->db->order_by('timestamp' , 'desc');
+								$this->db->group_by('serial');
 					        	$payments = $this->db->get('payment')->result_array();
+								//print_r($payments);
 					        	foreach ($payments as $row):
 					        ?>
 					        <tr>
@@ -213,9 +215,9 @@
 					            <td><?php echo $row['amount'];?></td>
 					            <td><?php echo date('d M,Y', $row['timestamp']);?></td>
 					            <td align="center">
-					            	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_view_invoice/<?php echo $row['invoice_id'];?>');"
+					            	<a href="#" onclick="showAjaxModal('<?php echo base_url();?>index.php?modal/popup/modal_view_receipt/<?php echo $row['batch_number'];?>');"
 					            		class="btn btn-default">
-					            			<?php echo get_phrase('view_invoice');?>
+					            			<?php echo get_phrase('view_receipt');?>
 					            	</a>
 					            </td>
 					        </tr>
