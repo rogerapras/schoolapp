@@ -441,5 +441,140 @@ class Crud_model extends CI_Model {
 		
 		return $batch_number;
 	}
+	
+	function month_income_by_income_category($category_id,$current_date){
+		$detail_ids = $this->db->get_where('fees_structure_details',array('income_category_id'=>$category_id))->result_object();
+		$month_income = 0;
+		
+		foreach($detail_ids as $ids):
+			$cond = "detail_id=".$ids->detail_id." AND timestamp>=".strtotime($current_date)." AND timestamp<=".strtotime(date("Y-m-t",strtotime($current_date)))."";
+			$this->db->where($cond);
+			$month_income += $this->db->select_sum('amount')->get('payment')->row()->amount;
+		endforeach;
+		
+		return $month_income;
+	}
+
+	function sum_income_by_income_category($category_id,$current_date){
+		$detail_ids = $this->db->get_where('fees_structure_details',array('income_category_id'=>$category_id))->result_object();
+		$sum_income = 0;
+		
+		foreach($detail_ids as $ids):
+			$cond = "detail_id=".$ids->detail_id." AND timestamp<".strtotime(date("Y-m-01",strtotime($current_date)))."";
+			$this->db->where($cond);
+			$sum_income += $this->db->select_sum('amount')->get('payment')->row()->amount;
+		endforeach;
+		
+		return $sum_income;
+	}
+
+	function  month_expense_by_income_category($category_id,$current_date){
+		
+		$expense_ids = $this->db->get_where('expense_category',array('income_category_id'=>$category_id))->result_object();
+		
+		$expense_headers = $this->db->get('expense')->result_object();
+		
+		$month_expense = 0;
+		
+		foreach($expense_ids as $row):
+				$cond = " expense_details.expense_category_id= ".$row->expense_category_id." AND expense.timestamp>='".$current_date."' AND expense.timestamp<='".date('Y-m-t',strtotime($current_date))."'";
+				$this->db->join('expense', 'expense_details.expense_id = expense.expense_id', 'right');
+				$this->db->where($cond);
+				$month_expense += $this->db->select_sum('cost')->get('expense_details')->row()->cost;
+		endforeach;		
+		
+		return $month_expense;
+	}
+
+	function  sum_expense_by_income_category($category_id,$current_date){
+		
+		$expense_ids = $this->db->get_where('expense_category',array('income_category_id'=>$category_id))->result_object();
+		
+		$expense_headers = $this->db->get('expense')->result_object();
+		
+		$sum_expense = 0;
+		
+		foreach($expense_ids as $row):
+				$cond = " expense_details.expense_category_id= ".$row->expense_category_id."  AND expense.timestamp<'".date('Y-m-01',strtotime($current_date))."'";
+				$this->db->join('expense', 'expense_details.expense_id = expense.expense_id', 'right');
+				$this->db->where($cond);
+				$sum_expense += $this->db->select_sum('cost')->get('expense_details')->row()->cost;
+		endforeach;		
+		
+		return $sum_expense;
+	}	
+	function revenue_opening_balance($category,$current_date){
+		$start_date = $this->db->get_where('settings',array('type'=>'system_start_date'))->row()->description;
+	
+		$open = 0;
+		
+		if(strtotime(date('Y-m-01',strtotime($start_date)))===strtotime(date('Y-m-01',strtotime($current_date)))){
+			
+				$open_obj = $this->db->get_where('opening_balance',array('income_category_id'=>$category));
+					
+					if($open_obj->num_rows()!==0){
+						$open = $open_obj->row()->amount;	
+					}
+		}else{
+			
+			$open_obj = $this->db->get_where('opening_balance',array('income_category_id'=>$category));
+			
+			$open_raw = 0;
+				
+					if($open_obj->num_rows()!==0){
+						$open_raw = $open_obj->row()->amount;	
+					}
+			
+			$open = $open_raw + $this->sum_income_by_income_category($category, $current_date)-$this->sum_expense_by_income_category($category, $current_date);
+		}
+		return $open;
+	}
+
+	function budget_expense_summary_by_expense_category($expense_category_id){
+		
+		$arr = range(1,12);
+		
+		$month_total = array();
+		
+		for($i=1;$i<sizeof($arr)+1;$i++){
+			$cond = "budget.expense_category_id=".$expense_category_id." AND budget_schedule.month=".$i."";	
+			$month_total[$i] = $this->db->select_sum('amount')->join('budget','budget_schedule.budget_id=budget.budget_id',"right")->where($cond)->get('budget_schedule')->row()->amount; 
+			
+		}
+			
+		return $month_total;
+	}
+
+	function budget_income_summary_by_expense_category($income_category_id){
+		
+		$arr = range(1,12);
+		
+		$month_total = array();
+		
+		for($i=1;$i<sizeof($arr)+1;$i++){
+			$cond = "expense_category.income_category_id=".$income_category_id." AND budget_schedule.month=".$i."";	
+			$this->db->join('budget','budget_schedule.budget_id=budget.budget_id',"right");
+			$this->db->join('expense_category','budget.expense_category_id=expense_category.expense_category_id',"right");
+			$month_total[$i] = $this->db->select_sum('amount')->where($cond)->get('budget_schedule')->row()->amount; 
+			
+		}
+			
+		return $month_total;
+	}
+	
+	function budget_summary_by_expense_category(){
+		
+		$arr = range(1,12);
+		
+		$month_total = array();
+		
+		for($i=1;$i<sizeof($arr)+1;$i++){
+			$cond = "budget_schedule.month=".$i."";	
+			$month_total[$i] = $this->db->select_sum('amount')->join('budget','budget_schedule.budget_id=budget.budget_id',"right")->where($cond)->get('budget_schedule')->row()->amount; 
+			
+		}
+			
+		return $month_total;
+	}
 
 }

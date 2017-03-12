@@ -1,3 +1,7 @@
+<?php
+//print_r($this->crud_model->budget_income_summary_by_expense_category(1))
+?>
+
 <div class="row">
 	<div class="col-sm-10">
 	<div class="panel panel-primary" id="">
@@ -7,9 +11,9 @@
 				<div class="panel-options">
 					<ul class="nav nav-tabs">					
 						<li  class=""><a href="#new-budget-item" data-toggle="tab"><?=get_phrase('new_budget_item');?></a></li>
-						<!--<li class=""><a href="#budget-summary" data-toggle="tab"><?=get_phrase('budget_summary');?></a></li>-->
-						<li class="active"><a href="#budget-schedules" data-toggle="tab"><?=get_phrase('budget_schedules');?></a></li>	
-						<li class=""><a href="#actual-incomes" data-toggle="tab"><?=get_phrase('actual_incomes');?></a></li>											
+						<li class="active"><a href="#budget-summary" data-toggle="tab"><?=get_phrase('budget_summary');?></a></li>
+						<li class=""><a href="#budget-schedules" data-toggle="tab"><?=get_phrase('budget_schedules');?></a></li>
+											
 					</ul>
 				</div>
 		</div>
@@ -144,11 +148,152 @@
 						</form>
 				</div>
 						
-				<!--<div class="tab-pane" id="budget-summary">
-																			
-				</div>-->
+				<div class="tab-pane active" id="budget-summary">
+					<caption><?=get_phrase('summary_by_expense_categories');?></caption>
+					<table class="table table-bordered table-striped">
+						<thead>
+							<tr>
+								<th><?=get_phrase('expense_category');?></th>
+								<th><?=get_phrase('total');?></th>
+								
+								<th><?php echo get_phrase('Jan');?></th>
+								<th><?php echo get_phrase('Feb');?></th>
+								<th><?php echo get_phrase('Mar');?></th>
+								<th><?php echo get_phrase('Apr');?></th>
+								<th><?php echo get_phrase('May');?></th>
+								<th><?php echo get_phrase('Jun');?></th>
+								<th><?php echo get_phrase('Jul');?></th>
+								<th><?php echo get_phrase('Aug');?></th>
+								<th><?php echo get_phrase('Sep');?></th>
+								<th><?php echo get_phrase('Oct');?></th>
+								<th><?php echo get_phrase('Nov');?></th>
+								<th><?php echo get_phrase('Dec');?></th>
+							</tr>
+						</thead>	
+						<tbody align="right">
+							<?php
+								$expense_category = $this->db->get('expense_category')->result_object();
+								
+								foreach($expense_category as $exp_cat):
+								
+								$exp_spread = $this->crud_model->budget_expense_summary_by_expense_category($exp_cat->expense_category_id);
+								
+							?>
+								<tr>
+									<td  align="left"><?=$exp_cat->name;?></td>
+									<td><?=number_format(array_sum($exp_spread),2);?></td>
+									
+									<?php
+										foreach($exp_spread as $month):
+									?>
+										
+										<td><?=number_format($month,2);?></td>
+									
+									<?php
+										endforeach;
+									?>
+									
+								</tr>
+							<?php
+								endforeach;
+							?>
+						</tbody>
+						<tfoot align="right">
+							<?php
+								$budget_summary = $this->crud_model->budget_summary_by_expense_category();
+							?>
+							<tr>
+								<td align="left"><?=get_phrase('total');?></td>
+								<td><?=number_format(array_sum($budget_summary),2);?></td>
+								
+								<?php
+									foreach($budget_summary as $total):
+								?>
+									<td><?=number_format($total,2);?></td>
+								
+								<?php
+									endforeach;
+								?>
+								
+							</tr>
+						</tfoot>
+					</table>
+					
+					<hr/>
+					
+					<caption><?=get_phrase('summary_by_income_categories');?></caption>
+					<table class="table table-bordered table-striped">
+						<thead>
+							<tr>
+								<th><?=get_phrase('income_category');?></th>
+								<th><?=get_phrase('total');?></th>
+								
+								<th><?php echo get_phrase('Jan');?></th>
+								<th><?php echo get_phrase('Feb');?></th>
+								<th><?php echo get_phrase('Mar');?></th>
+								<th><?php echo get_phrase('Apr');?></th>
+								<th><?php echo get_phrase('May');?></th>
+								<th><?php echo get_phrase('Jun');?></th>
+								<th><?php echo get_phrase('Jul');?></th>
+								<th><?php echo get_phrase('Aug');?></th>
+								<th><?php echo get_phrase('Sep');?></th>
+								<th><?php echo get_phrase('Oct');?></th>
+								<th><?php echo get_phrase('Nov');?></th>
+								<th><?php echo get_phrase('Dec');?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php
+								$income_categories = $this->db->get('income_categories')->result_object();
+								
+							foreach($income_categories as $inc_cat):
+								
+								$inc_spread = $this->crud_model->budget_income_summary_by_expense_category($inc_cat->income_category_id);
+								
+							?>
+								<tr>
+									<td  align="left"><?=$inc_cat->name;?></td>
+									<td><?=number_format(array_sum($inc_spread),2);?></td>
+									
+									<?php
+										foreach($inc_spread as $month):
+									?>
+										
+										<td><?=number_format($month,2);?></td>
+									
+									<?php
+										endforeach;
+									?>
+									
+								</tr>
+							<?php
+								endforeach;
+							?>
+						</tbody>
+						<tfoot align="right">
+							<?php
+								$budget_summary = $this->crud_model->budget_summary_by_expense_category();
+							?>
+							<tr>
+								<td align="left"><?=get_phrase('total');?></td>
+								<td><?=number_format(array_sum($budget_summary),2);?></td>
+								
+								<?php
+									foreach($budget_summary as $total):
+								?>
+									<td><?=number_format($total,2);?></td>
+								
+								<?php
+									endforeach;
+								?>
+								
+							</tr>
+						</tfoot>	
+					</table>
+									
+				</div>
 											
-				<div class="tab-pane active" id="budget-schedules">
+				<div class="tab-pane" id="budget-schedules">
 				<?php
 					$expense_category = $this->db->get('expense_category')->result_object();
 					
@@ -257,10 +402,6 @@
 				<?php
 					endforeach;
 				?>									
-				</div>
-				
-				<div class="tab-pane" id="actual-incomes">
-					
 				</div>
 						
 			</div>

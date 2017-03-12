@@ -377,6 +377,15 @@ CREATE TABLE `noticeboard` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 
+DROP TABLE IF EXISTS `opening_balance`;
+CREATE TABLE `opening_balance` (
+  `opening_balance_id` int(50) NOT NULL AUTO_INCREMENT,
+  `income_category_id` int(50) NOT NULL,
+  `amount` int(50) NOT NULL,
+  PRIMARY KEY (`opening_balance_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
 DROP TABLE IF EXISTS `parent`;
 CREATE TABLE `parent` (
   `parent_id` int(11) NOT NULL AUTO_INCREMENT,

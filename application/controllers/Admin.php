@@ -1167,6 +1167,22 @@ class Admin extends CI_Controller
         $this->load->view('backend/index', $page_data); 
     }
 	
+	function financial_report($param1=""){
+        if ($this->session->userdata('admin_login') != 1)
+            redirect('login', 'refresh');		
+		
+		$t_date = date('Y-m-d');
+		
+		if($param1==="scroll") $t_date = $this->input->post('t_date'); 
+		
+		if($param1==="") $t_date = date('Y-m-01');
+
+        $page_data['page_name']  = 'financial_report';
+		$page_data['current_date'] = $t_date;
+        $page_data['page_title'] = get_phrase('financial_report');
+        $this->load->view('backend/index', $page_data);
+	}
+	
 	function contra_entry($param1="",$param2=""){
 		
 		if($param1==='create'){

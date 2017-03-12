@@ -221,7 +221,8 @@
                     $page_name == 'expense_category' ||
                         $page_name == 'student_payment'||
 						$page_name == 'budget'||
-						$page_name == 'cash_book')
+						$page_name == 'cash_book'||
+						$page_name == 'financial_report')
                             echo 'opened active';
         ?> ">
             <a href="#">
@@ -259,6 +260,11 @@
                 <li class="<?php if ($page_name == 'budget') echo 'active'; ?> ">
                     <a href="<?php echo base_url(); ?>index.php?admin/budget">
                         <span><i class="entypo-dot"></i> <?php echo get_phrase('budget'); ?></span>
+                    </a>
+                </li>
+                <li class="<?php if ($page_name == 'financial_report') echo 'active'; ?> ">
+                    <a href="<?php echo base_url(); ?>index.php?admin/financial_report">
+                        <span><i class="entypo-dot"></i> <?php echo get_phrase('financial_report'); ?></span>
                     </a>
                 </li>
             </ul>

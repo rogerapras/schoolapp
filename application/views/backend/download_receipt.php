@@ -4,18 +4,6 @@ $receipt = $this->db->get_where('payment',array('batch_number'=>$batch_number))-
 
 ?>	
 
-
-
-<link rel="stylesheet" href="<?php echo base_url();?>assets/js/jquery-ui/css/no-theme/jquery-ui-1.10.3.custom.min.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/css/font-icons/entypo/css/entypo.css">
-<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Noto+Sans:400,700,400italic">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/css/neon-core.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/css/neon-theme.css">
-<link rel="stylesheet" href="<?php echo base_url();?>assets/css/neon-forms.css">
-<script src="<?php echo base_url();?>assets/js/jquery-1.11.0.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-
 <div class="row">
 	<div class="col-md-12" style="font-size: 9pt;">
 				<div class="row">
